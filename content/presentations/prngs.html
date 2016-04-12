@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pseudo-Random Number Generators</title>
+    <meta name="tags" content="r, stata, sas, python, prng" />
+    <meta name="date" content="2016-02-05" />
+    <meta name="authors" content="Elizabeth Byerly" />
+    <meta name="summary" content="Pseudo-random number generators for statistical analysis" />
+    
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" href="css/201602-style.css">
+  </head>
+  <body>
+    <textarea id="source">
+
+name: Pseudo-Random<br>Number Generators
+class: transition no-number split-50
+count: false
+# {{ name }}
+
+.column[.left[
+  2016-02-05
+]]
+
+.column[.right[
+  Elizabeth Byerly  
+  [@ByerlyElizabeth](https://twitter.com/ByerlyElizabeth)  
+  [GitHub](https://github.com/ElizabethAB) -
+  [LinkedIn](https://www.linkedin.com/in/elizabethbyerly)
+]]
+
+
+---
+
+name: Purpose
+class:
+## {{ name }}
+
+This presentation will provide an overview of pseudo-random number generators,
+focusing on practical information for statistical analysis.
+
+<p align="middle" style="padding: 1em"><img src="images/prngs-dice.png" height=250 alt="http://www.clker.com/cliparts/6/4/1/6/12456404511653839274badaman_dice.svg.med.png"></p>
+
+
+---
+
+name: Agenda
+class:
+## {{ name }}
+
+1. PRNGs 101
+2. Evaluating PRNGs
+3. Best Practices
+
+A short break.
+
+4. PRNGs You Will Encounter
+5. Evaluating PRNGs, Evaluate Harder
+6. Non-Statistical Use Cases
+
+???
+
+The presentation's content is split in two halves:
+* First is front-loaded with practical considerations
+* Second provides esoterically interesting and likely useless information.
+
+There will be a break during which you may gracefully duck out.
+
+
+<!-- ----------------------------------------------------------------------- -->
+---
+
+name: PRNGs 101
+class: transition no-number
+count: false
+## {{ name }}
+
+* What is a PRNG?
+* When do we use PRNGs?
+
+
+---
+
+name: What is a PRNG?
+class: 
+## {{ name }}
+
+<h1 style="font-family: Consolas" class="center" id="randloop"></h1>
+
+A pseudo-random number generator is an algorithm that deterministically
+produces a series of numbers designed to mimic a random series.
+
+Pseudo-random numbers are valuable for simulations, statistics, mathematics,
+and encryption.
+
+???
+
+True random number generators:
+* dice,
+* roulette wheel,
+* a stumbling drunk.
+
+A true random number generator cannot be reproducible! As statisticians, a
+*good* PRNG is preferred to a RNG.
+
+The development of PRNGs was kickstarted by the need for reusable random values
+for physics simulations.
+
+
+---
+
+name: What is a PRNG?  (2)
+class: split-50
+## {{ name }}
+
+<p class="center">Middle Squares is a simple PRNG.</p>
+
+.column[
+* Choose an n-digit seed
+* Square the seed, padding leading zeros if fewer than n+n digits
+* Use the middle n digits as the next seed
+* Repeat
+]
+.column[
+<img src="images/prngs-middle-squares.svg" height=350 align="right">
+]
+
+???
+
+A simple, terrible PRNG, used by Von Neumann in initial simulations for
+developing thermonuclear weapons. (He appreciated the fact the terribleness
+ensured no one "forgot" it was a PRNG and treated its outputs as true random.)
+
+PRNGs are an iterated map, chaotic but never genuinely random.
+
+---
+
+name: When do we use a PRNG?
+class: 
+## {{ name }}
+
+.column[
+Statistical sampling relies on randomness.  
+We rely on statistical sampling.
+
+* Sampling
+* Monte Carlo
+* Bootstrap
+]
+.column[
+<img src="images/prngs-bootstrap.gif" align="right" width=400>
+]
+
+???
+
+It's a short list, but it is important to 100% of my current professional work.
+
+Numbers that are systematically non-random introduce bias to statistical
+analysis. If the series we use as random numbers show non-random qualities, we
+will produce wrong answers.
+
+
+<!-- ----------------------------------------------------------------------- -->
+---
+
+name: Best Practices
+class: transition no-number
+count: false
+## {{ name }}
+
+* Know your PRNG
+* Track your environment
+* Set your seed
+* Understand your use case
+
+???
+
+In the next four slides, we're going to cover the basics of using PRNGs for
+statistical analysis.
+
+This doesn't answer, what's the best PRNG? It answers,
+what do I need to understand about different PRNGs, my use case, and returning
+to my work to use PRNGs effectively?
+
+
+---
+
+name: Know your PRNG
+class: 
+## {{ name }}
+
+<table class="tg" align="center">
+  <tr>
+    <th>Software</th>
+    <th>PRNG</th>
+    <th>Using Alternative PRNGs</th>
+  </tr>
+  <tr>
+    <td>R</td>
+    <td>Mersenne-Twister</td>
+    <td>Built-in, Packages, Scripts</td>
+  </tr>
+  <tr>
+    <td>Python</td>
+    <td>Mersenne-Twister</td>
+    <td>Packages, Scripts</td>
+  </tr>
+  <tr>
+    <td>Stata 13</td>
+    <td>KISS</td>
+    <td>Scripts</td>
+  </tr>
+  <tr>
+    <td>SAS</td>
+    <td>Mersenne-Twister</td>
+    <td>Scripts</td>
+  </tr>
+</table>
+
+???
+
+The table shows four statistical software tools and their default PRNG
+(beginning of 2016). This is the most basic question: what PRNG am I using if
+I am using the default functions of a language?
+
+The last column indicates how alternative PRNGs can be introduced: simplest is 
+if they are built in as an option, often available as an extension through the 
+tool's installation system, ultimately always available if you take the time to 
+write out the algorithm yourself. 
+
+All of these systems have changed the PRNG they use at some point. Stata 14 uses
+Mersenne-Twister, for instance. Stay up to date on your software of choice!
+
+SAS does not have built-in alternatives. Many of SAS's random functions are 
+underpinned by a PRNG other than Mersenne-Twister (functions using this older 
+version include UNIFORM, NORMAL, and functions beginning with RAN*). SAS's 
+documentation suggests strongly against using these functions, ie a deprecated 
+feature, so I don't list it as a built-in alternative.
+
+
+---
+
+name: Track your environment
+class: 
+## {{ name }}
+
+```
+> sessionInfo()
+R version 3.2.3 (2015-12-10)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 7 x64 (build 7601) Service Pack 1
+
+locale:
+[1] LC_COLLATE=English_United States.1252  LC_CTYPE=English_United States.1252   
+[3] LC_MONETARY=English_United States.1252 LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.1252    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+loaded via a namespace (and not attached):
+[1] tools_3.2.3
+```
+
+???
+
+This is the most visually dense slide with which I will torture you today. The
+output is an example of how we can use R to track our execution environment.
+
+* Software version and release date,
+* Platform,
+* Operating system,
+* Local computer settings,
+* Attached packages and their versions.
+
+Back to, Stata 13 uses KISS and Stata 14 uses Mersenne-Twister. Whether a
+system is using 32-bit or 64-bit backend storage will change value sequences.
+Knowing where your system was when you ran a file is key for reproducing it in
+the future!
+
+
+---
+
+name: Set your seed
+class: 
+## {{ name }}
+
+<table class="tg" align="center">
+  <tr>
+    <th>Software</th>
+    <th>Set Seed</th>
+    <th>Retrieve State</th>
+  </tr>
+  <tr>
+    <td>R</td>
+    <td style="font-family:Consolas">set.seed(20160205)</td>
+    <td style="font-family:Consolas">.Random.seed</td>
+  </tr>
+  <tr>
+    <td>Python</td>
+    <td style="font-family:Consolas">random.seed()</td>
+    <td style="font-family:Consolas">random.getstate()</td>
+  </tr>
+  <tr>
+    <td>Stata 13</td>
+    <td style="font-family:Consolas">set seed 20160205</td>
+    <td style="font-family:Consolas">display c(seed)</td>
+  </tr>
+  <tr>
+    <td>SAS</td>
+    <td style="font-family:Consolas">call streaminit(20160205);</td>
+    <td>Not supported</td>
+  </tr>
+
+</table>
+
+???
+
+Of course you'll know your seed for each run, because of your log file. Because
+you always generate a log file. Right?
+
+Pick your seed well and randomly. You can look at your system's provided seed
+value or call your PRNG once and use those values as seeds. Or, the practice of
+using that day's date is not bad - but, of course you shouldn't do this for
+multiple related analyses started on the same day!
+
+In Python, you cannot use `random.seed()` with the value returned by
+`random.getstate()`. You provide the seed state to `random.setstate()`.
+
+Do not set your seed too frequently. Setting the seed before each draw means you
+are using the seed value passed through the algorithm, which isn't even pseudo-
+random.
+
+The SAS command is part of a data process. Providing it 0 as an argument will
+have the computer uses its clock to initialize the stream.
+
+
+---
+
+name: Understand your use case
+class: 
+## {{ name }}
+
+1. Simple random sample, 100 records from a population of 100,000
+  <br><b>vs</b><br>
+  Bootstrap estimation, sampling 100,000 records 10,000 times
+
+2. Local system running a single process
+  <br><b>vs</b><br>
+  Remote system running multiple processes in a cluster
+
+3. Sampling from a binomial distribution
+  <br><b>vs</b><br>
+  Sampling from values between 0 and 1, inclusive
+
+???
+
+If your use case is sensitive to the quality and kind of PRNG (it usually is),
+do your homework and know what your software is using when you ask it for random
+numbers!
+
+ONE
+<br>
+In the first case, a PRNG with a short period is more than sufficient. In the
+second, you are taking 10^9 samples. The period is relevant.
+The distinct sequences produced by a PRNG is limited by the sequence's period.
+Rule of thumb: if you need n random values, you need a PRNG with a cycle length
+of n^2
+
+TWO
+<br>
+Local system can use a single seed. Remote system needs a seed for each process,
+but providing the same seed means all processes using the same sequence! You
+can encounter this when telling cluster nodes to use the system time as a seed
+value if any start at the same time (more likely as more nodes are used).
+
+THREE
+<br>
+Any sufficiently random PRNG can handle returning a 0 or a 1. They cover limited
+space, however, and may not represent the granularity in the space between 0 and
+1 your use case requires.
+
+
+<!-- ----------------------------------------------------------------------- -->
+---
+
+name: Evaluating PRNGs
+class: transition no-number
+count: false
+## {{ name }}
+
+* Period
+* Randomness
+* Efficiency
+
+
+---
+
+name: Evaluating PRNGs
+class: 
+## {{ name }}
+
+**Period**: the length of the sequence of numbers the PRNG can generate before
+it must start repeating.
+
+**Randomness**: whether the values produced by the PRNG match with qualities
+known to be satisfied by true random number generators.
+
+**Efficiency**: the computational burden of calling the PRNG.
+
+???
+
+Period
+
+* The reported period of a PRNG is not the period you will get. The actual
+  period will depend on the seed value. Depending on the complexity and kind of
+  your PRNG, knowing the period of a given seed entails stepping through all
+  produced values until the end is encountered.
+* The maximum period length for a PRNG depends on how the computer represents
+  its state; the period is less than or equal to 2^b (bits!)
+* Mersenne-Twister has a period of 2^32 - 1, but the likelihood of a duplicate
+  value in 10^5 draws is more than 50%.
+
+Randomness
+
+* Can it be used to approximate pi?
+* Does it return a balanced number of odd and even values?
+
+Efficiency
+
+* How much memory does the PRNG require? (2Kb is considered a lot...)
+* How many processing cycles does a new drawn value require to produce?
+
+
+<!-- ======================================================================= -->
+---
+
+name: Break time! Go get a snack.
+class: transition no-number
+count: false
+## {{ name }}
+
+<p align="middle"><img src="https://ak-hdl.buzzfed.com/static/2014-04/enhanced/webdr05/9/11/anigif_enhanced-buzz-28640-1397058250-4.gif" alt="How It's Made, Episode 10-04, Ice Cream Treats"></p>
+
+
+---
+
+name: Agenda
+class:
+## {{ name }}
+
+1. PRNGs 101
+2. Evaluating PRNGs
+3. Best Practices
+
+A short break.
+
+4. PRNGs You Will Encounter
+5. Evaluating PRNGs, Evaluate Harder
+6. Non-Statistical Use Cases
+
+
+<!-- ----------------------------------------------------------------------- -->
+---
+
+name: PRNGs You Will Encounter
+class: transition no-number
+count: false
+## {{ name }}
+
+
+---
+
+name: Respected
+class: 
+## {{ name }}
+
+<table class="tg" align="center" style="font-size: .8em">
+  <tr>
+    <th>PRNG</th>
+    <th>Period</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td>KISS99</td>
+    <td>2^37</td>
+    <td>The short period renders this PRNG inappropriate for many simulations
+        situations.</td>
+  </tr>
+  <tr>
+    <td>Mersenne-Twister</td>
+    <td>2^19,937</td>
+    <td>Uses 2.5Kb of memory. It passes Diehard tests and most of the Dieharder
+        and TestU01 tests. It is not appropriate for multi-stream work flows.
+	</td>
+  </tr>
+  <tr>
+    <td>L'Ecuyer-CMRG</td>
+    <td>2^191</td>
+    <td>Produces multiple streams of random numbers from a single seed, making
+        it appropriate for multi-stream work flows.</td>
+  </tr>
+</table>
+
+???
+
+Multiple streams of random numbers, in the case of L'Ecuyer, is more valuable
+than providing an individual stream to each process because the one algorithm's
+streams never get into sync.
+
+KISS example code:
+```
+static unsigned int x = 123456789,y = 362436000,z = 521288629,c = 7654321; /* Seed variables */ unsigned int KISS()
+{ unsigned long long t, a = 698769069ULL;
+x = 69069*x+12345; y ^= (y<<13); y ^= (y>>17); y ^= (y<<5); /* y must never be set to zero! */ t = a*z+c; c = (t>>32); /* Also avoid setting z=c=0! */
+return x+y+(z=t); }
+```
+
+---
+
+name: Terrible
+class: 
+## {{ name }}
+
+<p align="middle"><img src="images/prngs-dilbert.jpg" alt="Dilbert, Scott Adams, 2001"></p>
+
+???
+
+IBM's `randu` produces directly correlated values in sequence.
+
+C `rand()` produces alternatively odd and even numbers
+
+Javascript's `Math.random()` will likely produce duplicate values after only 30k
+draws.
+
+Microsoft's `libc` generator has a period of 32k, meaning you'll be playing the
+same game of Solitaire (from the same deck shuffle) after only 214 games.
+
+
+---
+
+name: True Random
+class: 
+## {{ name }}
+
+Linux:
+```shell
+/dev/random
+```
+
+Microsoft
+```shell
+CryptGenRandom
+```
+
+Apple iOS
+```shell
+SecRandom
+```
+
+???
+
+Many systems can take advantage of a random number generator: you.
+
+Random numbers are unpredictable, uniform on some range, uncorrelated, minimum
+information for maximum entropy, impossible to generate.
+
+We will almost never use these for statistics because we almost always want to
+be able to reproduce our analysis.
+
+`/dev/random` uses hardware timings to produce (record?) entropy.
+
+
+<!-- ----------------------------------------------------------------------- -->
+---
+
+name: Evaluating PRNGs, Evaluate Harder
+class: transition no-number
+count: false
+## {{ name }}
+
+* Measuring qualities of randomness
+* Diehard(er)
+* TestU01
+
+---
+
+name: Measuring qualities of randomness
+class: 
+## {{ name }}
+
+PRNG development is facilitated by test suites.
+
+* Diehard(er)
+* TestU01
+* NIST RNG-TWG
+
+Batteries of tests on the null hypothesis of, *the PRNG is indistinguishable
+from a true random number generator*, return p-values. A good test suite pushes
+bad PRNGs to unambiguous failure.
+
+???
+
+* National Institute of Standards and Technology: Random Number Generator
+  Technical Working Group
+
+
+---
+
+name: Diehard(er)
+class: split-50
+## {{ name }}
+
+.column[
+* Birthday spacings
+* Overlapping permutations
+* Minimum distance test
+* The squeeze test
+* Runs test
+]
+.column[
+<p><img src="images/prngs-ayn_random.png" hspace=50 alt="Randall Munroe, xkcd, https://xkcd.com/1277/"></p>
+]
+
+???
+
+Diehard George Marsaglia 1996
+<br>
+Dieharder Robert Brown 2016 (actively developed)
+
+Dieharder is an expansion on Marsaglia's original suite, actively developed and
+implementing the Statistical Test Suite provided by NIST.
+
+A few examples of easily understood (relatively) tests from Diehard:
+
+* Birthday spacings: Choose random points on a large interval and observe how
+  closely the spacing matches exponential distribution. The name is based on the
+  birthday paradox.
+* Overlapping permutations: Analyze sequences of five consecutive random
+  numbers: the 120 possible orderings should occur with statistically equal
+  probability.
+* Minimum distance test: Randomly place 8,000 points in a 10,000 x 10,000
+  square, find the minimum distance between the pairs, and the square of the
+  minimum distance should be exponentially distributed with a certain mean.
+* The squeeze test: Multiply 231 by random floats on (0,1) until you reach 1.
+  Repeat this 100,000 times. The number of floats needed to reach 1 should
+  follow a certain distribution.
+* Runs test: Generate a long sequence of random floats on (0,1). Count ascending
+  and descending runs. The counts should follow a certain distribution.
+
+
+---
+
+name: TestU01
+class: 
+## {{ name }}
+
+Testing platform:
+
+1. Implement pre-programming PRNGs
+2. Implement specific statistical tests
+3. Implementing batteries of statistical tests
+4. Apply tests to families of PRNGs
+
+* Small Crush
+* Crush
+* Big Crush
+
+???
+
+Pierre L’Ecuyer & Richard Simard (2007)
+
+* Small Crush: 10 tests (2 minutes)
+* Crush: 96 tests (1.7 hours)
+* Big Crush: 106 tests (12 hours)
+
+
+<!-- ----------------------------------------------------------------------- -->
+---
+
+name: Non-Statistical Use Cases
+class: transition no-number
+count: false
+## {{ name }}
+
+* Cryptology
+
+---
+
+name: Cryptology
+class: 
+## {{ name }}
+
+Cryptologists prioritize unpredictability as it feeds into computational
+complexity.
+
+Perfect secrecy may only be preserved when the key comes from a true random
+source with high entropy.
+
+
+---
+
+name: CSPRNG
+class: 
+## {{ name }}
+
+Cryptologically Secure PRNGs are used for encryption.
+
+* key generation
+* nonces
+* one-time pads
+* salts
+
+A good CSPRNG is a good PRNG, but a PRNG may not satisfy CSPRNG requirements.
+
+???
+
+* key-pair - as in, SSH
+* nonces - pseudo-random number issued in an authentication protocol to ensure
+  that old communications cannot be reused in replay attacks
+* one-time pads - a plaintext is paired with a random secret key (also referred
+  to as a one-time pad). Each bit or character of the plaintext is encrypted by
+  combining it with the corresponding bit or character from the pad. If the key
+  is truly random, is at least as long as the plaintext, is never reused in
+  whole or in part, and is kept secret, the resulting ciphertext is impossible
+  to decrypt.
+* salts - random data that is used as an additional input to a one-way function
+  that "hashes" a password or passphrase.
+
+---
+
+name: CSPRNG Requirements
+class: 
+## {{ name }}
+
+1. Pass statistical randomness tests
+2. Hold up under serious attacks, including when the initial or running state
+   becomes available to the attacker
+
+* Next bit test
+* State compromise extensions
+
+???
+  
+next-bit test: given the first k bits of a random sequence, there is no
+polynomial-time algorithm that can predict the (k+1)th bit with better than 50%
+probability of success. A generator passing the next bit test will pass all
+other polynomial time statistical tests for randomness.
+
+state compromise extensions: if the state is revealed, it should be impossible
+to reconstruct the stream of randoom numbers prior to the revelation. If there
+is entropy input while running, it should be infeasible to use knowledge of the
+input's state to predict future conditions of the CSPRNG state.
+
+Pi is an interesting example: any state of pi passes the next-bit test, as pi
+appears random, but knowing the state allows and attacker.
+
+
+<!-- ----------------------------------------------------------------------- -->
+---
+
+name: Questions?
+class: transition no-number
+count: false
+## {{ name }}
+
+
+---
+
+name: References
+class: 
+## {{ name }}
+
+* "Good Practices in (Pseudo) Random Number Generation for Bioinformatics
+  Applications", David Jones, 2010
+* "A Comparison of Random Number Generators Used in Business - 2004 Update",
+  Wendy Rotz, Eric Falk, Archana Joshee, 2004
+* "TIFU by using Math.random()", Mike Malone, 2015
+* "Why secure systems require random numbers", John Graham-Cunning, 2013
+* "TestU01 User's Guide", Pierre L'Ecuyer, Richard Simard, 2013
+
+See the presenter's notes for many, many more.
+
+
+???
+
+* "Randu: a bad random number generator", Peter Young, April 24, 2013
+* "How random is xkcd?" Comfortably Numbered, March 20th, 2015
+* "KISS: A Bit Too Simple", Greg Rose, 2011(?)
+* "Mersenne-Twister: A 623-dimensionally equidistributed uniform pseudorandom
+  number generator", Makoto Matsumoto and Takuji Nishimura, 1998
+* "Pseudo-random number generators for Monte Carlo simulations on Graphics
+  Processing Units", Vadim Demchik, 2010
+* Wikipedia. A lot of Wikipedia.
+
+
+
+    </textarea>
+    <script src="js/remark-201601.min.js"></script>
+    
+    <script src="js/prngs-rand-demos.js"></script>
+    
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        slideNumberFormat: '%current% / %total%',
+        countIncrementalSlides: false,
+        highlightStyle: 'github'
+      });
+    </script>
+    
+    <script src="http://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS_HTML&delayStartupUntil=configured" type="text/javascript"></script>
+    <script src="js/enable-mthjx.js"></script>
+    
+  </body>
+</html>

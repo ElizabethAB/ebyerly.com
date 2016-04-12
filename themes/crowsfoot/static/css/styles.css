@@ -1,0 +1,285 @@
+@import url(pygments.css);
+@import url(reset.css);
+
+/* Fonts -------------------------------------------------------------------- */
+/* latin-ext */
+@font-face {
+  font-family: 'Enriqueta';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/enriqueta-latin-ext-400.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Enriqueta';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/enriqueta-latin-400.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Cutive';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/cutive-latin-ext-400.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Cutive';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/cutive-latin-400.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+}
+/* Fonts -------------------------------------------------------------------- */
+
+
+/* General stuff. */
+
+h1, h2, h3 {
+  font-weight: bold;
+  color: #126180;
+  font-family: 'Enriqueta', Palatino, serif;
+  padding: 15px 0px 15px 0px;
+}
+
+body {
+    width: 800px;
+    background-color:#fefdfc;
+    font-family: 'Cutive', Palatino, serif;
+    margin: 20px auto 100px auto;
+}
+
+html { /* This stuff is for the sticky footer. */
+    min-height:100%;
+    position:relative;
+    font-size: 18px;
+    -webkit-font-smoothing: antialiased;
+}
+
+
+/* Site header. */
+
+.sitebanner {
+    position: relative;
+    font-size: 18;
+    top: 15px;
+    padding-bottom: 15px;
+}
+
+.siteheader {
+    margin-bottom: 30px;
+    overflow: visible;
+}
+
+.siteimage {
+    float: left;
+    height: 200px;
+    padding-right: 20px;
+}
+
+.sitetitle {
+    font-weight: 300;
+    font-size: 4em;
+    padding-left: 10px; /* Hack to dodge :hover issue. */
+    position: relative; /* Hack to dodge :hover issue. */
+    left: -10px; /* Hack to dodge :hover issue. */
+}
+
+.sitesubtitle {
+    color: #000;
+    font-size: 1em;
+    margin-bottom: 30px;
+    margin-top: 20px;
+    /* padding-left: 30px; */
+}
+
+/* The navbar. */
+
+.menu {
+    font-size: 1.3em;
+    /* padding-left: 30px; */
+}
+
+.menu li {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+/* Article list on index page. */
+
+.posttitle {
+    font-size: 1.6em;
+}
+
+.posttitle a {
+    padding-left: 10px; /* Hack to dodge :hover issue. */
+    position: relative; /* Hack to dodge :hover issue. */
+    left: -10px; /* Hack to dodge :hover issue. */
+}
+
+.postinfo {
+    margin-top: 5px;
+    margin-bottom: 10px;
+    color: #666;
+    font-size: .7em;
+}
+
+.postsummary {
+    font-weight: 300;
+}
+
+.post {
+    margin-bottom: 20px;
+}
+
+/* Links. */
+
+a { /* Generic link styling, greyish and underlined. */
+    color: #126180;
+    text-decoration: underline;
+    -o-transition:color .2s ease-in-out;
+    -webkit-transition:color .2s ease-in-out;
+    -moz-transition:color .2s ease-in-out;
+    transition:color .2s ease-in-out;
+}
+
+.nodec {
+    /* Links that aren't just in content areas shouldn't be underlined */
+    text-decoration: none;
+}
+
+a:hover { /* Hover style: transition to orange. Cool! */
+    -o-transition:color .2s ease-in-out;
+    -webkit-transition:color .2s ease-in-out;
+    -moz-transition:color .2s ease-in-out;
+    transition:color .2s ease-in-out;
+    color: #618012;
+}
+
+/* Generic to all content. */
+
+.content ol, .content ul {
+    position: relative;
+    left: 40px;
+    padding-bottom: 20px;
+}
+
+/* Make super and subscipts look reasonable. */
+
+sup, sub {
+    vertical-align: 0;
+    position: relative;
+}
+
+sup {
+    bottom: 1ex;
+    font-size: 0.6em;
+}
+
+sub {
+    top: 0.8ex;
+    font-size: 0.6em;
+}
+
+/* Article */
+
+.article {
+    margin-top: 30px;
+}
+
+/* Lists */
+
+.article * li {
+    line-height: 1.1em;
+    margin-top: 0.3em;
+    margin-bottom: 0.3em;
+}
+
+/* Paragraphs. */
+
+.article p {
+    line-height: 1.3em;
+    margin-bottom: 1.5em;
+}
+
+/* Headers. */
+
+.article h1 {
+    padding-bottom: 1em;
+    font-size: 1.4em;
+}
+
+.article h2 {
+    padding-bottom: 0.9em;
+    font-size: 1.2em;
+}
+
+.article h3 {
+    padding-bottom: 0.8em;
+    font-size: 1em;
+}
+
+/* Footnotes. */
+
+.article .footnote {
+    font-size: 0.8em;
+}
+
+/* Images */
+
+.content * img {
+    display: block;
+    margin: 0 auto 0 auto;
+    max-width: 600px;
+    height: auto;
+}
+
+/* Blockquotes */
+
+.article blockquote {
+    font-size: 0.9em;
+    font-style: italic;
+    border-left: 3px solid #ccc;
+    margin-left: 30px;
+    padding-left: 10px;
+    margin-bottom: 30px;
+}
+
+/* Code */
+
+.codehilite, .highlight { /* Put code blocks in the right place. */
+    background-color:#fefefe;
+    width: 800px;
+    margin: 0 0 0 0;
+    margin-bottom: 20px;
+    overflow: auto;
+    border: 1px solid lightgrey;
+    border-radius: 5px;
+}
+
+.article pre {
+    font-family: 'Source Code Pro';
+    font-size: .8em;
+    margin: auto;
+    padding: 1em;
+    line-height: 120%;
+}
+
+.article code {
+    font-family: 'Source Code Pro';
+    font-size: 1em;
+}
+
+/* Footer at page bottom */
+
+footer {
+    bottom: 0;
+    color: grey;
+    font-size: .7em;
+    height: 30px;
+    position: absolute;
+}

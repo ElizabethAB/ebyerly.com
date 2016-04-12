@@ -1,0 +1,153 @@
+body {
+  font-family: 'Cutive', Palatino, serif;
+}
+h1, h2, h3 {
+  font-weight: bold;
+  color: #126180;
+  font-family: 'Enriqueta', Palatino, serif;
+}
+
+td {
+    padding:0 15px 0 15px;
+}
+
+
+/* Slide content ------------------------------------------------------------ */
+.remark-slide-content {
+  padding: 1em 3em 1em 3em;
+  font-size: 25px;
+}
+
+.remark-slide-content h1 {
+  font-size: 3em;
+}
+
+.remark-slide-content h2 {
+  font-size: 2em;
+}
+
+
+/* Transition slide --------------------------------------------------------- */
+.remark-slide > .transition {
+  vertical-align: middle;
+  color: #fff;
+  background-color:  #126180;
+  text-align: middle;
+}
+.transition .remark-slide-number {
+  display: none;
+}
+.remark-slide > .transition h1 {
+  color: #fff;
+}
+.remark-slide > .transition h2 {
+  color: #fff;
+}
+.remark-slide > .transition a {
+  color: #cbebf8;
+}
+
+
+.no-number .remark-slide-number {
+  display: none;
+}
+
+
+/* Code --------------------------------------------------------------------- */
+.remark-code, .remark-inline-code {
+  text-align: left;
+  font-size: 1.2em;
+  background-color: #e0e0e0; 
+}
+
+
+/* Bottom left corner logo -------------------------------------------------- */
+.remark-slide-content:after {
+    content: "";
+    position: absolute;
+    bottom: 5px;
+    left: 20px;
+    height: 45px;
+    width: 45px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-image: url(../img/logo.svg);
+}
+
+
+/* Split display columns ---------------------------------------------------- */
+.column:first-of-type {float:left}
+.column:last-of-type {float:right}
+
+.split-40 .column:first-of-type {width: 39%}
+.split-40 .column:last-of-type {width: 59%}
+
+.split-50 .column:first-of-type {width: 49%}
+.split-50 .column:last-of-type {width: 49%}
+
+
+/* Table formatting --------------------------------------------------------- */
+
+.tg {
+  border-collapse:collapse;
+  border-spacing:0;
+}
+.tg td {
+  padding:15px 15px;
+  border-style:solid;
+  border-width:1px;
+}
+.tg th {
+  padding:15px 15px;
+  border-style:solid;
+  border-width:1px;
+  background-color:#126180;
+  color:#ffffff
+}
+
+
+/* Fonts -------------------------------------------------------------------- */
+/* latin-ext */
+@font-face {
+  font-family: 'Enriqueta';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/enriqueta-latin-ext-400.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Enriqueta';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/enriqueta-latin-400.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+}
+
+
+/* latin-ext */
+@font-face {
+  font-family: 'Cutive';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/cutive-latin-ext-400.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Cutive';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/cutive-latin-400.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+}
+
+
+/* latin */
+@font-face {
+  font-family: 'Rokkitt';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/rokkitt-latin-400.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+}

@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  
+    <link rel="stylesheet" type="text/css" href="css/201602-style.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+    <title>Data Intake: Defining, Cleaning and Merging</title>
+    <meta name="tags" content="data,eda,ida,merging,cleaning,munging" />
+    <meta name="date" content="2016-04-09" />
+    <meta name="authors" content="Elizabeth Byerly" />
+    <meta name="summary" content="Basic data intake notes for DataFest 2016" />
+
+  </head>
+  <body>
+    <textarea id="source">
+
+name: Data Intake<br>Defining, Cleaning, Merging
+class: transition no-number split-50
+count: false
+# {{ name }}
+
+.column[.left[
+  2016-04-09
+]]
+
+.column[.right[
+  Elizabeth Byerly  
+  [@ByerlyElizabeth](https://twitter.com/ByerlyElizabeth)  
+  [GitHub](https://github.com/ElizabethAB) -
+  [LinkedIn](https://www.linkedin.com/in/elizabethbyerly)
+]]
+
+
+---
+
+name: Purpose
+class: split-50
+## {{ name }}
+
+.column[.left[
+  What do we do with new data?
+
+  We need to look at it, define what we understand it to contain, clean it into
+  a usable form, and merge it with other data to make it more useful.
+]]
+
+.column[.right[
+  <img src="images/data-intake-basic-paper-stack.jpg" alt="" width=400>
+]]
+
+???
+
+We are going to talk about what it takes to make our data usable.
+
+
+---
+
+name: Agenda
+class: split-40
+## {{ name }}
+
+.column[.left[
+1. Define
+2. Explore
+3. Clean
+4. Merge
+]]
+
+.column[.right[
+  <img src="images/data-intake-basic-love.jpg" alt="http://img.wonderhowto.com/images/75/69/63431420660123/0/fastidious-book-art-cut-folded.w654.jpg" width=300 align="left">
+]]
+
+???
+
+This presentation is short. We're looking to come in under 45 minutes, which
+means we will not have time to cover granular detail.
+
+I won't cover everything you need to know and I won't be including, "Here's how
+to do this in R/Python/whatever" because you are working with all different
+systems. My goal is to introduce the vocabulary and concepts you will need to
+Google your way to success. 
+
+
+<!-- ======================================================================= -->
+---
+
+name: Define your data
+class: transition no-number
+count: false
+## {{ name }}
+
+* Look at your data
+* Make a data dictionary
+
+
+---
+
+name: Look at your data
+class: 
+background-image: url(images/data-intake-basic-ew1.jpg)
+<!-- http://imgur.com/jH4jf3u -->
+### {{ name }}
+
+???
+
+With innocence and enthusiasm, we approach our data!...
+
+--
+
+name: Look at your data
+background-image: url(images/data-intake-basic-ew2.jpg)
+<!-- http://imgur.com/jH4jf3u -->
+
+???
+
+... only to be inevitably disappointed.
+
+Look at the first ten rows of your data. Where possible, do it in a way that
+won't impose transformations on your data (like opening a .csv file in a text
+editor)
+
+
+---
+
+name: First impressions
+class: 
+## {{ name }}
+
+The file
+* File size (100 MB? 100 GB?)
+* File type (.csv, .RData, .xlsx)
+* Date and time of creation (not reliable)
+
+The data
+* Number of observations (rows)
+* Number of variables (columns)
+
+
+---
+
+name: Look at your data
+class: 
+## {{ name }}
+
+Characters
+* Encoding: `≤80` becomes `â‰¤80%`
+* White space: `Bob_` versus `Bob _`
+* Capitalization: `Summit` and `summit`
+
+Numerics
+* Stored with meaningful characters: `$100`, `50%`
+* Scale: Is this `weight` variable in pounds or grams? (JK it's in stone)
+
+
+---
+
+name: Look at your data
+class: 
+## {{ name }}
+
+Factors
+* Factor v. character variables depends on your use case.
+* Defining a variable as a factor is a way of indicating there are a finite and,
+  at least potentially, known set of possible values.
+
+Dates
+* Date storage is worth an entire presentation
+* "Zero day": 1970 vs. 1900
+* ISO standard and everything else: "06/20/1989" vs. 1989-06-20
+
+???
+
+Linux counts the zero time as 1970-01-01, Excel as 1900-01-01. You should check
+what your system uses.
+
+
+---
+
+name: Make a data dictionary
+class: 
+## {{ name }}
+
+1. List all the data's variables
+2. Write out your understanding of what each variable means
+    * Record if you don't know what a variable means!
+3. Record how each variable is stored, as far as you can tell (data type,
+   scale, formatting, encoding)
+4. When possible, confirm these notes with the data's source
+
+???
+
+Be ready to update your dictionary as you get a better understanding.
+
+
+<!-- ======================================================================= -->
+---
+
+name: Exploratory data analysis
+class: transition no-number
+count: false
+## {{ name }}
+
+* Descriptive statistics
+* Visualizations
+
+???
+
+Now that we have a literal understanding of *what* our data is, we need to start
+trying to understand what our data might be able to tell us.
+
+EDA is the step where we try to discard our preconceived notions about what our
+data will contain. Did someone tell you it has nationwide information? Okay,
+but what if every observation is from Washington, DC?
+
+
+---
+
+name: Descriptive statistics
+class: 
+## {{ name }}
+
+Qualitative
+* Categorical
+
+Quantitative
+* Numeric
+
+Ambiguous
+* Dates
+
+???
+
+Numerics can be bucketed into a categorical. Categorical variables may hide 
+meaningful quantitative information, like eye shades. Some variables are obvious
+about their dual status.
+
+
+---
+
+name: Descriptive statistics
+class: 
+## {{ name }}
+
+Univariate
+* Categorical: frequency
+```
+> table(diamonds$cut)
+     Fair      Good Very Good   Premium     Ideal 
+     1610      4906     12082     13791     21551 
+```
+
+* Continuous: central tendency and dispersion
+```
+> c(mean(diamonds$depth), sd(diamonds$depth))
+[1] 61.749405  1.432621
+```
+
+???
+
+
+
+---
+
+name: Descriptive statistics
+class: 
+## {{ name }}
+
+Frequency
+<p align="middle" style="padding: 1em"><img src="images/data-intake-basic-freq.png" height = 300></p>
+
+
+---
+
+name: Descriptive statistics
+class: 
+## {{ name }}
+
+Central tendency and dispersion
+<p align="middle" style="padding: 1em"><img src="images/data-intake-basic-disp.png" height = 300></p>
+
+
+---
+
+name: Descriptive statistics
+class: 
+## {{ name }}
+
+Bivariate
+* Joint frequency
+```
+> table(diamonds$cut, diamonds$color)
+               D    E    F    G    H    I    J
+  Fair       163  224  312  314  303  175  119
+  Good       662  933  909  871  702  522  307
+  Very Good 1513 2400 2164 2299 1824 1204  678
+  Premium   1603 2337 2331 2924 2360 1428  808
+  Ideal     2834 3903 3826 4884 3115 2093  896
+```
+
+
+---
+
+name: Descriptive statistics
+class: 
+## {{ name }}
+
+Joint frequency
+<p align="middle" style="padding: 1em"><img src="images/data-intake-basic-jfreq.png" height = 300></p>
+
+
+---
+
+name: Descriptive statistics
+class: 
+## {{ name }}
+
+Bivariate
+* Grouped central tendencies and dispersions
+```
+> diamonds %>% group_by(cut) %>%
+>   summarise(mean(depth), sd(depth))
+        cut mean(depth) sd(depth)
+1      Fair    64.04168 3.6434275
+2      Good    62.36588 2.1693739
+3 Very Good    61.81828 1.3786308
+4   Premium    61.26467 1.1588149
+5     Ideal    61.70940 0.7185386
+```
+
+---
+
+name: Descriptive statistics
+class: 
+## {{ name }}
+
+Grouped tendencies and dispersions
+<p align="middle" style="padding: 1em"><img src="images/data-intake-basic-jdisp.png" height = 300></p>
+
+
+---
+
+name: Descriptive statistics
+class: 
+## {{ name }}
+
+Bivariate
+* Covariance and correlation
+```
+> cor(diamonds$depth, diamonds$table)
+[1] -0.2957785
+> cov(diamonds$depth, diamonds$table)
+[1] -0.9468399
+```
+
+---
+
+name: Descriptive statistics
+class: 
+## {{ name }}
+
+Covariance and correlation
+<p align="middle" style="padding: 1em"><img src="images/data-intake-basic-pnt.png" height = 300></p>
+
+
+<!-- ======================================================================= -->
+---
+
+name: Clean your data
+class: transition no-number
+count: false
+## {{ name }}
+
+* Rename variables
+* Transformation
+* Missing values
+
+
+---
+
+name: Rename variables
+class: 
+## {{ name }}
+
+```
+the_length_of_rope_connecting_points
+V20
+Number of Points Connected
+```
+
+**Make variable names short, descriptive, and coherent**
+
+```
+rope_length
+rope_color
+n_connections
+```
+
+???
+
+Make your variable names something that will work across multiple statistical
+packages (lower snack case, no punctuation marks). Try to pick your names to be
+as short and descriptive as possible - short because you'll be typing it over
+and over, descriptive so that someone can open up your code and read it as
+though it were pseudo-code.
+
+
+---
+
+name: Transformation
+class: 
+## {{ name }}
+
+* Convert to a consistent and useful scale
+* Consider trimming or containing outlier values
+* Enforce consistent formatting
+
+General rules are difficult. 
+
+All clean data is alike. All dirty data is dirty in its own way.
+
+
+???
+
+Is the same value defined the same way every time?
+
+
+---
+
+name: Missing values
+class: 
+## {{ name }}
+
+<table border="1" align="center" bgcolor="#e0e0e0">
+<tr> <th> carat </th> <th> cut </th> <th> color </th> <th> clarity </th> <th> depth </th> <th> table </th> <th> price </th> <th> x </th> <th> y </th> <th> z </th>  </tr>
+  <tr> <td align="right"> 0.23 </td> <td> Ideal </td> <td>  </td> <td> SI2 </td> <td align="right"> 61.50 </td> <td align="right"> 55.00 </td> <td align="right"> 326 </td> <td align="right"> 3.95 </td> <td align="right"> 3.98 </td> <td align="right"> 2.43 </td> </tr>
+  <tr> <td align="right"> 0.21 </td> <td> Premium </td> <td> E </td> <td> SI1 </td> <td align="right">  </td> <td align="right"> 61.00 </td> <td align="right"> 326 </td> <td align="right"> 3.89 </td> <td align="right"> 3.84 </td> <td align="right"> 2.31 </td> </tr>
+  <tr> <td align="right"> 0.23 </td> <td> Good </td> <td> E </td> <td> VS1 </td> <td align="right"> 56.90 </td> <td align="right"> 65.00 </td> <td align="right">  </td> <td align="right"> 4.05 </td> <td align="right"> 4.07 </td> <td align="right"> 2.31 </td> </tr>
+  <tr> <td align="right"> 0.29 </td> <td> Premium </td> <td> I </td> <td>  </td> <td align="right"> 62.40 </td> <td align="right"> 58.00 </td> <td align="right"> 334 </td> <td align="right"> 4.20 </td> <td align="right"> 4.23 </td> <td align="right"> 2.63 </td> </tr>
+  <tr> <td align="right"> 0.31 </td> <td> Good </td> <td> J </td> <td> SI2 </td> <td align="right">  </td> <td align="right">  </td> <td align="right"> 335 </td> <td align="right"> 4.34 </td> <td align="right"> 4.35 </td> <td align="right"> 2.75 </td> </tr>
+</table>
+
+* Imputation
+* Deletion
+* Recoding
+
+???
+
+Why are values missing? Is it random, does it represent a choice, does it encode
+information? Is it corruption?
+
+* Missing completely at random: missing y depends on neither x nor y
+* Missing at random: missing y depends on x, but not y
+* Missing not at random: probability of missing y depends on y
+
+Which variables are missing? Is there missingness in all variables or is it
+concentrated?
+
+Is there a pattern in the missingness?
+
+
+---
+
+name: Save it!
+class: 
+## {{ name }}
+
+<p align="middle" style="padding: 1em"><img src="images/data-intake-basic-savefile.png" height = 300 alt="https://openclipart.org/image/2400px/svg_to_png/204433/savefile.png"></p>
+
+
+<!-- ======================================================================= -->
+---
+
+name: Merge your data
+class: transition no-number
+count: false
+## {{ name }}
+
+* Unique keys
+* Join types
+
+???
+
+"Merging data" refers to joining two datasets in order to flesh out the total
+breadth of information available to any given observation.
+
+
+---
+
+name: Unique keys
+class: 
+## {{ name }}
+
+What defines a unique observation in your data?
+
+* What *should* define a unique observation?
+* What *actually* defines a unique observation?
+
+<p align="middle" style="padding: 1em"><img src="images/data-intake-basic-id.jpg" height = 200 alt="https://globalprosperity.files.wordpress.com/2012/01/ruthfremsonnytimes.jpg?w=307&h=205"></p>
+
+???
+
+A unique identifying key should be your name, parents' identities, and the date
+and place of your birth. But people lie, or parents with twins decide to be
+funny and name them both "George", so we use biometrics to uniquely ID humans
+in contexts where we think veracity is critical.
+
+You may have a column that says ID. It may or may not actually be an ID.
+Check for uniqueness.
+
+
+---
+
+name: Join types
+class: 
+## {{ name }}
+
+Left
+
+<p align="middle" style="padding: 1em"><img src="images/data-intake-basic-left.png" height = 300"></p>
+
+
+---
+
+name: Join types
+class: 
+## {{ name }}
+
+Inner
+
+<p align="middle" style="padding: 1em"><img src="images/data-intake-basic-inner.png" height = 300"></p>
+
+
+---
+
+name: Join types
+class: 
+## {{ name }}
+
+Full
+
+<p align="middle" style="padding: 1em"><img src="images/data-intake-basic-full.png" height = 300"></p>
+
+
+---
+
+name: Join types
+class: 
+## {{ name }}
+
+Outer
+
+<p align="middle" style="padding: 1em"><img src="images/data-intake-basic-outer.png" height = 300"></p>
+
+
+<!-- ======================================================================= -->
+---
+
+name: Review
+class: transition no-number
+count: false
+## {{ name }}
+
+1. Define
+2. Explore
+3. Clean
+4. Merge
+
+
+---
+
+name: Questions?
+class: transition no-number
+count: false
+# {{ name }}
+
+
+<!-- ======================================================================= -->
+
+
+
+
+    </textarea>
+    <script src="js/remark-201601.min.js"></script>
+    
+    <script src="js/prngs-rand-demos.js"></script>
+    
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        slideNumberFormat: '%current% / %total%',
+        countIncrementalSlides: false,
+        highlightStyle: 'github'
+      });
+    </script>
+    
+    <script src="http://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS_HTML&delayStartupUntil=configured" type="text/javascript"></script>
+    <script src="js/enable-mthjx.js"></script>
+    
+  </body>
+</html>

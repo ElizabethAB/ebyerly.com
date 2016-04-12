@@ -1,0 +1,36 @@
+@font-face {
+    font-family: 'icomoon';
+    src: url('../fonts/icomoon.eot?uk3zqu');
+    src: url('../fonts/icomoon.eot?uk3zqu#iefix') format('embedded-opentype'),
+         url('../fonts/icomoon.ttf?uk3zqu') format('truetype'),
+         url('../fonts/icomoon.woff?uk3zqu') format('woff'),
+         url('../fonts/icomoon.svg?uk3zqu#icomoon') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  font-family: 'icomoon' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-decoration: inherit;
+  width: 1em;
+  line-height: 1em;
+  font-size: 120%;
+}
+
+.icon-logo:before { content: "\e900"; }
+.icon-mail:before { content: "\e901"; }
+.icon-facebook:before { content: "\e902"; }
+.icon-twitter:before { content: "\e903"; }
+.icon-rss:before { content: "\e904"; }
+.icon-steam:before { content: "\e905"; }
+.icon-github:before { content: "\e906"; }
+.icon-linkedin:before { content: "\e907"; }
+.icon-stackoverflow:before { content: "\e908"; }

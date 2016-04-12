@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Automated R Clusters on AWS</title>
+    <meta name="tags" content="r, aws, clusters, parallel" />
+    <meta name="date" content="2016-02-17" />
+    <meta name="authors" content="Elizabeth Byerly" />
+    <meta name="summary" content="Minimum viable clusters presentation for StatProgDC" />
+    
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" href="css/201602-style.css">
+  </head>
+  <body>
+    <textarea id="source">
+
+name: Automated R Clusters<br>on AWS
+class: transition no-number split-50
+count: false
+# {{ name }}
+
+.column[.left[
+  2016-02-17  
+  \#datadc
+]]
+.column[.right[
+  Elizabeth Byerly  
+  [@ByerlyElizabeth](https://twitter.com/ByerlyElizabeth)  
+  [GitHub](https://github.com/ElizabethAB) -
+  [LinkedIn](https://www.linkedin.com/in/elizabethbyerly)
+]]
+
+
+---
+
+name: Purpose and Agenda
+class:
+## {{ name }}
+
+This presentation describes a minimum viable R cluster solution for AWS.
+
+1. The Solution
+2. Code
+3. Next Steps
+
+???
+
+The solution: what motivated me to build out and automate an R cluster on AWS,
+what technologies are employed, what does it allow me to do?
+
+Code: switching to looking at the code base underlying the solution, comprised
+primarily of Python (for its excellent boto3 API into AWS) and shell scripting.
+
+Next steps: The minimum solution was built for a particular project, but small
+additions would allow it to generalize and be more accessible.
+
+
+<!-- ----------------------------------------------------------------------- -->
+---
+
+name: The Solution
+class: transition no-number
+count: false
+## {{ name }}
+
+* Problem
+* Technologies
+
+???
+
+Hard work rarely comes out of a vacuum! I'm going to outline the problem I
+needed to solve, the constraints under which I operated, and the highest level
+summary of the technologies used in my solution.
+
+
+---
+
+name: Problem
+class: 
+## {{ name }}
+
+An analytical model that takes 19+ hours to run on AWS's largest single compute
+instance, `c4.8xlarge` (36 cores).
+
+### Constraints:
+* No change to the core model code
+  - Vanilla R running a `parallel::parLapply()` operation
+* Analysts should not have to learn or interact with new languages
+* Solution must be available to external analysts
+
+???
+
+I work in litigation analytics. We submit our work as part of expert witness
+material, so the ability to cite previous use is important to establish the
+credibility of our findings. Building bespoke analytical software or
+implementations is bad.
+
+The company I work for mostly uses Stata; R represents the bleeding edge of
+for them. If using the solution required understanding Java, Python, or Scala,
+I'd be the only one who could use it!
+
+Finally, we are working with external teaming partners who would need to be able
+to run the same system. A local setup accessible over our VPN was out.
+
+
+---
+
+name: Technologies
+class: 
+## {{ name }}
+
+* Networking: AWS VPC
+* Communication: Sockets
+* Data Sharing: NFS
+* Access: RStudio Server
+
+???
+
+AWS VPC: Virtual Private Cloud, a shared security group, and a shared placement
+group allow for a relatively good proxy for a local area network setup.  
+The limitation is that units are not guaranteed to be "close" on the network.
+
+Network sockets are endpoints on a computer network, a handle or reference local
+computer programs can access via an API (application programming interface) to
+send or receive data. Our master node is going to communicate to its worker
+nodes via sockets.
+
+Network file system is a venerable and battle-tested distributed file system
+protocol (1984), open standard. We're going to use it to make all of our cluster
+nodes share the same home directory.
+
+RStudio Server is easy to setup and use on a remote computer, as long as network
+traffic over port 8787 is open.
+
+
+<!-- ----------------------------------------------------------------------- -->
+---
+
+name: Code
+class: transition no-number
+count: false
+## {{ name }}
+
+* Setup
+* Launching a cluster
+* Accessing the cluster
+
+
+---
+
+class: center middle
+## https://github.com/ElizabethAB/rcluster
+
+
+<!-- ----------------------------------------------------------------------- -->
+---
+
+name: Next Steps
+class: transition no-number
+count: false
+## {{ name }}
+
+* Limitations
+* Accessibility
+
+???
+
+What Have I Skipped?
+<br>
+* Getting data onto AWS
+* Running analysis
+* Retrieving outputs
+<br>
+If you're interested in actually using this solution, check out the GitHub repo
+or come and talk to me. If you need to make alterations for your particular use
+case and aren't sure where to start, come talk to me! I built it for my needs,
+but I would love if the community could derive some additional utility.
+
+Limitations
+<br>
+* Not as fast as LAN; not appropriate for data-transfer heavy work
+* Not secure
+* Clusters aren't saved
+
+Accessibility
+<br>
+* Users' ability to specify R packages
+* User must have Python 3, boto3, and paramiko installed
+
+
+
+
+
+    </textarea>
+    <script src="js/remark-201601.min.js"></script>
+    
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        slideNumberFormat: '%current% / %total%',
+        countIncrementalSlides: false,
+        highlightStyle: 'github'
+      });
+    </script>
+    
+<!--     <script src="http://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS_HTML&delayStartupUntil=configured" type="text/javascript"></script>
+    <script src="js/enable-mthjx.js"></script> -->
+    
+  </body>
+</html>
