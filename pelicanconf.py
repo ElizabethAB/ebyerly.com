@@ -4,10 +4,11 @@ from __future__ import unicode_literals
 
 AUTHOR = 'Elizabeth Byerly'
 SITENAME = 'E. Byerly'
-SITEURL = 'http://dev.ebyerly.com'
+SITEURL = "http://dev.ebyerly.com"
 
 PATH = 'content'
 STATIC_PATHS = ['images', 'presentations', 'css']
+ARTICLE_PATHS = ['presentations', 'development']
 PAGE_PATHS = ['pages']
 
 USE_FOLDER_AS_CATEGORY = True
@@ -40,7 +41,7 @@ SO_ADDRESS = "http://stackoverflow.com/users/1657297/elizabethab"
 TWITTER_ADDRESS = "https://twitter.com/ByerlyElizabeth"
 LINKEDIN_ADDRESS = "https://www.linkedin.com/in/elizabethbyerly"
 #FB_ADDRESS = 
-PROFILE_IMAGE_URL = "images/profile.jpg"
+PROFILE_IMAGE_URL = "http://ebyerly.com/images/profile-200.jpg"
 SITESUBTITLE = "Data, programming, and other trivialities"
 SHOW_ARTICLE_AUTHOR = False
 LICENSE_URL = "http://choosealicense.com/licenses/mit/"

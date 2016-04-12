@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>E. Byerly</title><link href="http://ebyerly.com/" rel="alternate"></link><link href="http://ebyerly.com/feeds/development.atom.xml" rel="self"></link><id>http://ebyerly.com/</id><updated>2016-04-12T00:00:00-04:00</updated><entry><title>Website launched</title><link href="http://ebyerly.com/website-launched.html" rel="alternate"></link><published>2016-04-12T00:00:00-04:00</published><author><name>Elizabeth Byerly</name></author><id>tag:ebyerly.com,2016-04-12:website-launched.html</id><summary type="html">&lt;p&gt;This website relies on two public technologies:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://blog.getpelican.com/"&gt;Pelican&lt;/a&gt; for conversion of MD into styled HTML&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://aws.amazon.com/s3/"&gt;AWS S3&lt;/a&gt; for site hosting, accessed by
+    &lt;a href="https://aws.amazon.com/cli/"&gt;AWS CLI&lt;/a&gt; for automated site updates&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Pelican is a good general tool for automatically generating static sites. My
+complication was that I have static pages (slidedecks) that I want to be on my
+site without any change to their HTML. I was able to build that into Pelican
+with four additional steps:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Add my static pages and their associated support (images, Javascript, CSS) to
+   a folder designated in the "pelicanconf.py" &lt;code&gt;STATIC_PATHS&lt;/code&gt; variable,&lt;/li&gt;
+&lt;li&gt;Specify &lt;code&gt;READERS = {'html': None}&lt;/code&gt; in "pelicanconf.py" so it would not try to
+   auto-publish the HTML pages with its templates,&lt;/li&gt;
+&lt;li&gt;Make a simple Python script, "autopost.py", which trolls through the
+   &lt;code&gt;STATIC_PATHS&lt;/code&gt; folders for HTML files:&lt;ol&gt;
+&lt;li&gt;Confirming no corresponding Markdown file has already been made,&lt;/li&gt;
+&lt;li&gt;Generating a Markdown file to be converted into a post by Pelican,
+   linking to the static site and populated by the HTML's &lt;code&gt;meta&lt;/code&gt; properties,&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;Modify Pelican's Makefile to&lt;ol&gt;
+&lt;li&gt;Run the "autopost.py" file first,&lt;/li&gt;
+&lt;li&gt;Run Pelican's default generation, and&lt;/li&gt;
+&lt;li&gt;Post the updated content to my development site.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;When I am ready to publish, the Makefile also includes a flag that will do the
+three steps above, except posting to my main landing page, ensuring I have an
+updated "requirements.txt" file, and saving all changes to a git repository that
+is &lt;a href="https://github.com/ElizabethAB/ebyerly.com"&gt;shared on GitHub&lt;/a&gt;.&lt;/p&gt;</summary><category term="pelican"></category><category term="publishing"></category></entry></feed>

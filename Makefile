@@ -35,9 +35,9 @@ help:
 publish:
 	pip freeze > requirements.txt
 	python autopost.py
-	$(PELICAN) $(INPUTDIR) -o $(OUTPUTDIR) -s $(CONFFILE) $(PELICANOPTS)
+	$(PELICAN) $(INPUTDIR) -o $(OUTPUTDIR) -s $(PUBLISHCONF) $(PELICANOPTS)
 	aws s3 sync output/. s3://ebyerly.com/
-	git add --all; git commit -m 'Updated by MAKE'; git push origin
+	git add --all; git commit -m 'Updated by MAKE'; git push origin master
 
 test:
 	python autopost.py

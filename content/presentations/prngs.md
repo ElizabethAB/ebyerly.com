@@ -4,4 +4,4 @@ date: 2016-02-05
 authors: Elizabeth Byerly
 summary: Pseudo-random number generators for statistical analysis
 
-[Pseudo-Random Number Generators]({filename}prngs.html)
+[Pseudo-Random Number Generators]({filename}/presentations/prngs.html)

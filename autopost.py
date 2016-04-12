@@ -28,4 +28,5 @@ for fn in ap_files:
                 if 'name' in link.attrs:
                     outmd.write(link['name'] + ": " + link['content'] + "\n")
             outmd.write("\n")
-            outmd.write("[" + title + "]({filename}" + os.path.basename(fn) + ")")
+            rel = os.sep.join(fn.split(os.sep)[1:]).replace("\\", "/")
+            outmd.write("[" + title + "]({filename}/" + rel + ")")

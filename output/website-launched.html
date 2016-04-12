@@ -3,8 +3,8 @@
 
   <head>
       <title>E. Byerly</title>
-      <link rel="stylesheet" type="text/css" href="http://dev.ebyerly.com/theme/css/icons.css"/>
-      <link rel="stylesheet" type="text/css" href="http://dev.ebyerly.com/theme/css/styles.css"/>
+      <link rel="stylesheet" type="text/css" href="http://ebyerly.com/theme/css/icons.css"/>
+      <link rel="stylesheet" type="text/css" href="http://ebyerly.com/theme/css/styles.css"/>
       <meta charset="utf-8" />
   </head>
 
@@ -13,13 +13,13 @@
     <header class="siteheader">
       <!-- site image -->
         <div class= "siteimage">
-          <a class="nodec" href=images/profile.jpg>
-            <img width="200" height="200" src=images/profile.jpg>
+          <a class="nodec" href=http://ebyerly.com/images/profile-200.jpg>
+            <img width="200" height="200" src=http://ebyerly.com/images/profile-200.jpg>
           </a>
         </div>
 
       <div class = "sitebanner">
-        <h1><a class="sitetitle nodec" href="http://dev.ebyerly.com">E. Byerly</a></h1>
+        <h1><a class="sitetitle nodec" href="http://ebyerly.com">E. Byerly</a></h1>
         <h3 class ="sitesubtitle">Data, programming, and other trivialities</h3>
         <!-- nav -->
         <nav class="menu">
@@ -57,7 +57,39 @@
   </div><!-- .postinfo -->
 
   <div class="article">
-    <p>This is the content of my super blog post.</p>
+    <p>This website relies on two public technologies:</p>
+<ul>
+<li><a href="http://blog.getpelican.com/">Pelican</a> for conversion of MD into styled HTML</li>
+<li><a href="https://aws.amazon.com/s3/">AWS S3</a> for site hosting, accessed by
+    <a href="https://aws.amazon.com/cli/">AWS CLI</a> for automated site updates</li>
+</ul>
+<p>Pelican is a good general tool for automatically generating static sites. My
+complication was that I have static pages (slidedecks) that I want to be on my
+site without any change to their HTML. I was able to build that into Pelican
+with four additional steps:</p>
+<ol>
+<li>Add my static pages and their associated support (images, Javascript, CSS) to
+   a folder designated in the "pelicanconf.py" <code>STATIC_PATHS</code> variable,</li>
+<li>Specify <code>READERS = {'html': None}</code> in "pelicanconf.py" so it would not try to
+   auto-publish the HTML pages with its templates,</li>
+<li>Make a simple Python script, "autopost.py", which trolls through the
+   <code>STATIC_PATHS</code> folders for HTML files:<ol>
+<li>Confirming no corresponding Markdown file has already been made,</li>
+<li>Generating a Markdown file to be converted into a post by Pelican,
+   linking to the static site and populated by the HTML's <code>meta</code> properties,</li>
+</ol>
+</li>
+<li>Modify Pelican's Makefile to<ol>
+<li>Run the "autopost.py" file first,</li>
+<li>Run Pelican's default generation, and</li>
+<li>Post the updated content to my development site.</li>
+</ol>
+</li>
+</ol>
+<p>When I am ready to publish, the Makefile also includes a flag that will do the
+three steps above, except posting to my main landing page, ensuring I have an
+updated "requirements.txt" file, and saving all changes to a git repository that
+is <a href="https://github.com/ElizabethAB/ebyerly.com">shared on GitHub</a>.</p>
   </div><!-- .content -->
 
 </section>

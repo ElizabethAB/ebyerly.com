@@ -165,7 +165,10 @@ a:hover { /* Hover style: transition to orange. Cool! */
 .content ol, .content ul {
     position: relative;
     left: 40px;
-    padding-bottom: 20px;
+}
+
+.content li {
+    padding-bottom: 5px;
 }
 
 /* Make super and subscipts look reasonable. */
@@ -189,12 +192,12 @@ sub {
 
 .article {
     margin-top: 30px;
+    line-height: 1.5em;
 }
 
 /* Lists */
 
 .article * li {
-    line-height: 1.1em;
     margin-top: 0.3em;
     margin-bottom: 0.3em;
 }
@@ -202,8 +205,8 @@ sub {
 /* Paragraphs. */
 
 .article p {
-    line-height: 1.3em;
-    margin-bottom: 1.5em;
+    margin-bottom: 1em;
+    margin-top: 1em;
 }
 
 /* Headers. */
@@ -252,7 +255,7 @@ sub {
 /* Code */
 
 .codehilite, .highlight { /* Put code blocks in the right place. */
-    background-color:#fefefe;
+    background-color: #f6cfc0;
     width: 800px;
     margin: 0 0 0 0;
     margin-bottom: 20px;
@@ -262,7 +265,7 @@ sub {
 }
 
 .article pre {
-    font-family: 'Source Code Pro';
+    font-family: "Lucida Console", Monaco, monospace;
     font-size: .8em;
     margin: auto;
     padding: 1em;
@@ -270,8 +273,11 @@ sub {
 }
 
 .article code {
-    font-family: 'Source Code Pro';
+    font-family: "Lucida Console", Monaco, monospace;
+    margin: 5px 0px 5px 0px;
+    padding: .2em;
     font-size: 1em;
+    background-color: #f6cfc0;
 }
 
 /* Footer at page bottom */
