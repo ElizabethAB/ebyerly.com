@@ -2,7 +2,7 @@ title: Amazon Web Services for Data Analysis
 tags: aws,cloud,ec2,rds,vpc,iam,emr,compliance
 date: 2015-11-12
 authors: Elizabeth Byerly, David Kretch
-summary: AWS products relevant to data analysts.
+summary: AWS products relevant to data analysts
 generator: pandoc
 viewport: width=device-width, initial-scale=1
 apple-mobile-web-app-capable: yes

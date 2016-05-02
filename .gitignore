@@ -1,7 +1,15 @@
 TODO/
+
 __pycache__/
+
 venv/
+
 *.jpg
+
 *.png
+
 *.gif
+
 *.svg
+*.csv
+*.db

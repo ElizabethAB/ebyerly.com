@@ -1,60 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 
-  <head>
-      <title>E. Byerly</title>
-      <link rel="stylesheet" type="text/css" href="http://ebyerly.com/theme/css/icons.css"/>
-      <link rel="stylesheet" type="text/css" href="http://ebyerly.com/theme/css/styles.css"/>
-      <meta charset="utf-8" />
-  </head>
+<head>
 
-  <body id="index">
-    <!-- header -->
-    <header class="siteheader">
-      <!-- site image -->
-        <div class= "siteimage">
-          <a class="nodec" href=http://ebyerly.com/images/profile-200.jpg>
-            <img width="200" height="200" src=http://ebyerly.com/images/profile-200.jpg>
-          </a>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    
+
+    <title>E. Byerly</title>
+    <link rel="stylesheet" href="http://ebyerly.com/theme/css/styles.css"/>
+    <link rel="icon" href="http://ebyerly.com/images/favicon.ico" type="image/x-icon"/>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            Menu
+          </button>
+          <h1><a class="navbar-brand icon-logo" href="http://ebyerly.com"></a></h1>
         </div>
-
-      <div class = "sitebanner">
-        <h1><a class="sitetitle nodec" href="http://ebyerly.com">E. Byerly</a></h1>
-        <h3 class ="sitesubtitle">Data, programming, and other trivialities</h3>
-        <!-- nav -->
-        <nav class="menu">
-          <ul>
-            <!-- menu items-->
-              <li><a class="nodec" href="/category/presentations.html">Presentations</a></li>
-              <li><a class="nodec" href="/category/development.html">Development</a></li>
-            <!--pages-->
-          <!-- services icons -->
-            <li><a class="nodec icon-mail" href="mailto:elizabeth.byerly@gmail.com"></a></li>
-            <li><a class="nodec icon-github" href="https://github.com/ElizabethAB"></a></li>
-            <li><a class="nodec icon-stackoverflow" href="http://stackoverflow.com/users/1657297/elizabethab"></a></li>
-            <li><a class="nodec icon-twitter" href="https://twitter.com/ByerlyElizabeth"></a></li>
-            <li><a class="nodec icon-linkedin" href="https://www.linkedin.com/in/elizabethbyerly"></a></li>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul style="font-size:16px" class="nav navbar-nav navbar-right">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Pages <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                          <li><a href="http://ebyerly.com/pages/about-me.html">About Me</a></li>
+                          <li><a href="http://ebyerly.com/pages/about-site.html">About Site</a></li>
+                      <li><a href="/category/presentations.html">Presentations</a></li>
+                      <li><a href="/category/posts.html">Posts</a></li>
+              </ul>
+            </li>
+                <li><a class="icon-mail" href="mailto:elizabeth.byerly@gmail.com"></a></li>
+                <li><a class="icon-github" href="https://github.com/ElizabethAB"></a></li>
+                <li><a class="icon-stackoverflow" href="http://stackoverflow.com/users/1657297/elizabethab"></a></li>
+                <li><a class="icon-twitter" href="https://twitter.com/ByerlyElizabeth"></a></li>
+                <li><a class="icon-linkedin" href="https://www.linkedin.com/in/elizabethbyerly"></a></li>
           </ul>
-        </nav>
-      </div> <!-- sitebanner -->
-    </header>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
 
     <!-- content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
 
-<section class="content">
-
-  <h3 class="posttitle">
-    <a class="nodec" href="/website-launched.html" rel="bookmark" title="Permalink to Website launched">
+  <h3><a class="nodec" href="/website-launched.html" rel="bookmark" title="Permalink to Website launched">
       Website launched
-    </a>
-  </h3>
+  </a></h3>
 
-  <div class="postinfo">
-    <p class="published" title="2016-04-12T00:00:00-04:00">
-      2016-04-12
-    </p>
+  <p class="published" title="2016-04-12T00:00:00-04:00">
+    2016-04-12
+  </p>
 
-  </div><!-- .postinfo -->
 
   <div class="article">
     <p>This website relies on two public technologies:</p>
@@ -91,23 +95,31 @@ with four additional steps:</p>
 three steps above, except posting to my main landing page, ensuring I have an
 updated "requirements.txt" file, and saving all changes to a git repository that
 is <a href="https://github.com/ElizabethAB/ebyerly.com">shared on GitHub</a>.</p>
-  </div><!-- .content -->
+  </div>
 
-</section>
-
-
+            </div>
+        </div>
+    </div>
+    
     <!-- footer -->
     <footer>
-      <p>
-        © Elizabeth Byerly, license <a href="http://choosealicense.com/licenses/mit/"> MIT</a>
-        unless otherwise noted.
-      </p>
-      <p>
-        Credits: 
-        <a href= "http://docs.getpelican.com/">Pelican</a>
-        <a href="http://github.com/porterjamesj/crowsfoot">crowsfoot</a>
-        <a href="https://icomoon.io/">IcoMoon</a>
-      </p>
+      <div class="row">
+        <div class="col-md-12">
+          <p>
+            © Elizabeth Byerly, license <a href="http://choosealicense.com/licenses/mit/"> MIT</a> unless otherwise noted.
+          </p>
+          <p>
+            Credits: <a href= "http://docs.getpelican.com/">Pelican</a>, <a href="https://icomoon.io/">IcoMoon</a>
+          </p>
+        </div>
+      </div>
     </footer>
-  </body>
+
+    <!-- jQuery Version 1.11.1 -->
+    <script src="http://ebyerly.com/theme/js/jquery.js"></script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="http://ebyerly.com/theme/js/bootstrap.js"></script>
+    
+</body>
+
 </html>

@@ -8,7 +8,7 @@ SITEURL = "http://dev.ebyerly.com"
 
 PATH = 'content'
 STATIC_PATHS = ['images', 'presentations', 'css']
-ARTICLE_PATHS = ['presentations', 'development']
+ARTICLE_PATHS = ['presentations', 'posts']
 PAGE_PATHS = ['pages']
 
 USE_FOLDER_AS_CATEGORY = True
@@ -17,7 +17,7 @@ DISPLAY_CATEGORIES_ON_MENU = True
 READERS = {'html': None}
 
 MENUITEMS = [('Presentations', '/category/presentations.html'),
-             ('Development', '/category/development.html')]
+             ('Posts', '/category/posts.html')]
 
 TIMEZONE = 'America/New_York'
 
@@ -33,7 +33,7 @@ AUTHOR_FEED_RSS = None
 
 # ==============================================================================
 # Theme and theme-specific settings
-THEME = "themes/crowsfoot"
+THEME = "themes/simplest-bootstrap"
 
 EMAIL_ADDRESS = "elizabeth.byerly@gmail.com"
 GITHUB_ADDRESS = "https://github.com/ElizabethAB"

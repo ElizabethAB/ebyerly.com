@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  
+    <link rel="stylesheet" type="text/css" href="css/201602-style.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+    <title>Robust Regression: Theory and Implementation in R</title>
+    <meta name="tags" content="regression,estimation,r,robust" />
+    <meta name="date" content="2015-03-13" />
+    <meta name="authors" content="Elizabeth Byerly" />
+    <meta name="summary" content="A primer on robust regression methods" />
+
+  </head>
+  <body>
+    <textarea id="source">
+
+name: Robust Regression
+class: transition no-number split-50
+count: false
+# {{ name }}
+## Theory and implementation in R
+
+<br>
+
+.column[.left[
+  2015-03-13
+]]
+
+.column[.right[
+  Elizabeth Byerly  
+  [@ByerlyElizabeth](https://twitter.com/ByerlyElizabeth)  
+  [GitHub](https://github.com/ElizabethAB) -
+  [LinkedIn](https://www.linkedin.com/in/elizabethbyerly)
+]]
+
+
+---
+
+name: Purpose
+class: 
+## {{ name }}
+
+Robust regression refers to a set of estimation tools which are robust to 
+outliers and high leverage observations. 
+
+We will discuss:
+* Motivations for using robust regression in our modeling,
+* The logic and algorithms underpinning its implementation, and
+* How these estimation methods can be called in R.
+
+???
+
+Poll: Who here feels they have a basic understanding of what I mean by “robust 
+regression?” Who has used robust regression in their work or at school? 
+
+
+---
+
+name: Agenda
+class: split-50
+## {{ name }}
+
+.column[.left[
+1. What is robust regression?
+2. Important concepts
+3. MM estimation and implementation options
+4. Limitations
+]]
+
+.column[.center[
+  <img src="images/rr-02-example-v-linear.png" height="400">
+]]
+
+???
+
+We start with WHAT is robust regression and WHY we care as analysts. 
+
+Important concepts will cover the M estimation paradigm, which is essential to 
+our understanding of how robust regression functions (and helped me to better 
+understand OLS estimation, so I hope the same for others in the audience).
+
+MM estimation will discuss the current standard in robust regression and 
+what options are available to us to actually run it against our data. 
+
+Finally, a very short reminder that robust regression does not cure all ills! 
+Limitations will be a few graphs illustrating why robust regression is not a 
+replacement for data explorations and diagnostic testing. 
+
+
+<!-- ======================================================================= -->
+---
+
+name: What is robust regression?
+class: transition no-number
+count: false
+## {{ name }}
+
+* Definition
+* Outliers, leverage, and influence
+* Why would we use it?
+
+
+---
+
+name: What is robust regression?
+class: 
+## {{ name }}
+
+**Again: robust regression refers to a set of estimation tools which are *robust
+to outliers and high leverage observations*.**
+
+* What is an outlier?
+* What is a high leverage observation?
+* What is “robust”? 
+
+???
+
+What are you trying to solve?
+How do you define an outlier?
+How do you treat outliers? 
+
+Robust regression methods seek to derive functions from observed data such that 
+non-informative data is ignored. 
+
+B. Ripley has an excellent quotation to this end: “Robust methods aim to have 
+high efficiency in the neighborhood of the assumed statistical model.” 
+
+
+---
+
+name: Outliers, leverage, and influence
+class: 
+## {{ name }}
+
+.center[<img src="images/rr-04-lm-plots.png" height="450">]
+
+???
+
+Outlier: high residual observation (technically), but this suffers masking. We 
+can think of it as “an unusual predicted value” Leverage: high hat value, an 
+unusual predictor value/vector. Even “good” leverage points should be noted, 
+not necessarily with concern, as they decrease our traditional measures of 
+parameter error. Far right observation is egregiously bad: enormous leverage, 
+enormous residual. At a glance, we’d think of it as an encoding error. Note 
+how its effect on the OLS estimate makes the top right “good” observation 
+have a very high residual: this is masking. 
+
+I’ll show real data in a few slides with some less over-the-top outliers. 
+
+Outliers are surprising observations within a body of data, appearing to be 
+outside the distribution of the majority of other observations. They may be 
+perfectly valid observations or they may represent an encoding error. The word 
+is qualitative and, when used pejoratively, represents a datum that obscures the 
+underlying relationship the analyst is seeking to define. Defining “outlier” 
+explicitly, such that they can be determined without qualitative and individual 
+judgment, is precisely the difficulty of robust estimation. 
+
+
+---
+
+name: Outliers
+class: 
+## {{ name }}
+
+### Diagnostic and Rules of Thumb
+* Studentized residuals
+
+$$\frac{\epsilon}{\hat{\sigma}\sqrt{1-h_{ii}}}\ge 2$$
+
+
+---
+
+name: Leverage
+class: 
+## {{ name }}
+
+### Diagnostic and Rules of Thumb
+* Hat values, `\(h_{ii}\)`
+
+$$diag(X(X'X)^{-1}X')\gt \frac{2(k+1)}{n}$$
+
+
+---
+
+name: Influence
+class: 
+## {{ name }}
+
+### Diagnostic and Rules of Thumb
+
+* DFBETAs
+
+$$\beta\_j - \beta\_{j-1} \ge \frac{2}{\sqrt{n}}$$
+
+* Cook's Distance
+
+$$\frac{e^2}{kMSE}(\frac{h\_{ii}}{(1-h\_{ii})^2}) \gt \frac{4}{n-k-1}$$
+
+???
+
+DFBETAs: difference in the beta
+
+Cook’s Distance: an F-statistic test on whether the coefficient values change
+with the exclusion of a point (functions to aggregate the information in
+DFBETAs, for good and ill)
+
+
+---
+
+name: Why robust regression?
+class: 
+### {{ name }}
+
+.center[<img src="images/rr-05-crime-plot.png" height="480">]
+
+???
+
+51 observations with three outliers: Florida, DC, and Mississippi.
+
+
+---
+
+name: Why robust regression?
+class: 
+### {{ name }}
+
+.center[<img src="images/rr-05-fairfax-plot.png" height="480">]
+
+???
+
+47K observations
+
+Manually pruning data to remove outliers is
+Subjective,
+Time consuming,
+Difficult or impossible for high-dimensional data, and
+Wastes information.
+
+
+---
+
+name: Why robust regression?
+class: 
+## {{ name }}
+
+We model towards two ends:
+* To predict future data
+* To infer relationships
+
+We would love our model to tell us, this one particular college drop-out will 
+pay his student loan because he is Bill Gates. Gates is one out of hundreds of 
+thousands, however, and we typically care more about modeling well the BULK of 
+our data. 
+
+???
+
+Predict: we know employment, credit score, size of loan, and value of house; 
+default? Infer: at-risk student receives intervention; decrease at-risk status? 
+
+There is such a thing as modeling to find a “needle in a haystack” – these 
+are interesting problems I would love to discuss! These are not the problems for 
+which robust regression would (or should) be used. 
+
+
+<!-- ======================================================================= -->
+---
+
+name: Important concepts
+class: transition no-number
+count: false
+## {{ name }}
+
+* Breakdown and relative efficiency
+* M estimation
+* Objective and weight functions
+
+
+---
+
+name: Breakdown point
+class: 
+## {{ name }}
+
+The mean (**<font color="#fd4e0b">orange</font>**) and median
+(**<font color="#126180">blue</font>**) provide an intuitive example of location 
+statistics with a low breakdown point of 0.0 versus a high breakdown point of 
+0.5.
+
+.center[<img src="images/rr-06-mean-v-median.png" height="200">]
+
+???
+
+Robustness of validity: breakdown point (mean v. median) 
+
+The blue line is your median: one completely-out-of-distribution observation is 
+not sufficient to pull the median estimate of location outside of the true 
+distribution. Mean, though, is already out! 
+
+Robustness of validity: how much non-informative data will “break” the 
+estimation? We think of a robust regression method in terms of its breakdown 
+point
+
+$$BDP(T,Z) = min(\frac{m}{n}:effect(m|T,Z)\text{ is infinite})$$
+
+The examples are location statistics. The take away for scale statistics is 
+the same: how many observations need to be off to pull the statistic outside of 
+the modelled distribution? 
+
+
+---
+
+name: Relative efficiency
+class: split-50
+## {{ name }}
+
+.column[.left[
+$$
+\text{Efficiency}(T_1,T_2) = \\\\
+\frac{E[(T_2 - \beta)^2]}{E[(T_1 - \beta)^2]}
+$$
+]]
+
+.column[.center[
+  <img src="images/rr-02-example-v-linear.png" height="400">
+]]
+
+???
+
+Efficiency of an estimator `\(T_2\)` against estimator `\(T_1\)` of a parameter,
+`\(\beta\)`, is their relative expected mean square error. 
+
+Robustness of efficiency: estimation efficiency (relative efficiency: variance 
+model 1 / variance model 2 with some issues of scale; variance of log() is one 
+solution, Iglewicz) 
+
+OLS is the most efficient: it literally minimizes variance. A typical check on 
+robust regression techniques is: how close to the OLS estimate is the estimate 
+produced by this method when errors are actually normally distributed? 
+
+Note RELATIVE: robust regression models are compared to the predictive 
+efficiency (read: low observation error) of OLS which is, by definition, 
+optimal. Good robust regressors will provide an estimate very close to the OLS 
+when the normality criterion is met. 
+
+
+---
+
+name: M estimation
+class: 
+## {{ name }}
+
+<p>
+Maximum likelihood estimator-like defining \(\rho = -\log{f}\) and solving
+
+$$min_{\hat{\beta}}\sum{\rho(y_i-x_i\hat{\beta})}$$
+
+\(\psi = -\rho'\) is the influence curve and creates the system of \(k+1\)
+estimating equations for the coefficients:
+
+$$\sum_{i=1}^n{\psi(y_i-x_i'\hat{\beta})x_i'}=0$$
+
+The weight functions are defined \(w(e)=\frac{\psi(e)}{e}\) and \(w_i=w(e_i)\).
+</p>
+
+???
+
+You are minimizing rho, or some function of your model’s errors. The 
+derivation of rho in terms of its coefficients provides us psi: a system of k+1 
+equations to estimate our coefficients. Weights are defined as our current psi 
+function applied to the errors over the errors. 
+
+OLS is an M estimator, remember? Its rho function is errors squared and you 
+minimize your errors squared!
+
+
+---
+
+name: M estimation
+class: 
+## {{ name }}
+
+$$\sum_{i=1}^n{w(y_i-x_i'\hat{\beta})x_i'}=0$$
+
+<p>
+Solving is a weighted least-squares problem, minimizing \(\sum{w_i^2e_i^2}\).
+</p>
+
+&nbsp;&nbsp;&nbsp;&nbsp;The weights depend on...  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The residuals depend on...  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The estimated coefficients depend on...  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The weights!
+
+???
+
+Least squares is easy to solve: all weights always equal 1. 
+
+Why? Let’s go back: minimize rho, which is residuals squared, gives us psi 
+(derivative of x^2 = 2x), gives us the weight (2x * 1/x = 2). If all the weights 
+are exactly the same, its equivalent to setting it to one because OLS is scale 
+equivariant. 
+
+
+---
+
+name: IRLS and convergence
+class: 
+## {{ name }}
+
+<p>
+Weighted Least Squares: \(\beta = [X'WX]^{-1}X'WY\).
+
+<ol>
+<li>Create initial estimate of coefficients, \(b_0\)</li>
+<li>While not \(b_n\simeq b_{n-1}\):
+  <ol>
+  <li>Observe error and weight terms per observation, \(e_{in}\) and \(w_{in}\)</li>
+  <li>Solve \(\sum_{i-1}^n{w_{in}(y_i-x_i'b_{n+1})x_i'}=0\)</li>
+  <li>Observe coefficient estimates, \(b_{n}\)</li>
+  </ol>
+</li>
+<li>Return \(b_{n}\) as the estimate at convergence</li>
+</p>
+
+???
+
+When weights vary based on estimated errors, a single regression does not solve 
+for minimization Convergence is not guaranteed; usually, actual implementations 
+of this algorithm incorporate a step count and cut off after a provided number 
+(20-1,000)
+
+
+---
+
+name: OLS
+class: 
+## {{ name }}
+
+### Objective
+
+$$\rho(e)=e^2$$
+
+### Weight
+
+$$w(e)=1$$
+
+
+---
+
+name: Huber
+class: 
+## {{ name }}
+
+### Objective
+
+$$\rho(e)=\cases{
+\frac{1}{2}e^2 & $|e|\le k$ \cr
+k|e|-\frac{1}{2}k^2 & $|e|\gt k$
+}$$
+
+### Weight
+
+$$w(e)=\cases{
+1 & $|e|\le k$ \cr
+\frac{k}{|e|} & $|e|\gt k$
+}$$
+
+???
+
+`\(k\)` is the tuning constant. Smaller values are more resistant to outliers at
+the expense of efficiency (when the errors are normally distributed).
+
+`\(k = 1.345\sigma\)` produces 95% efficiency when the errors are normal.
+
+
+---
+
+name: Tukey / bisquare
+class: 
+## {{ name }}
+
+### Objective
+
+$$\rho(e)=\cases{
+\frac{k^2}{6}(1-[1-(\frac{e}{k})^2]^3) & $|e|\le k$ \cr
+\frac{k^2}{6} & $|e|\gt k$
+}$$
+
+### Weight
+
+$$w(e)=\cases{
+(1-(\frac{e}{k})^2)^2 & $|e|\le k$ \cr
+0 & $|e|\gt k$
+}$$
+
+???
+
+`\(k\)` is the tuning constant. Smaller values are more resistant to outliers at
+the expense of efficiency (when the errors are normally distributed).
+
+`\(k = 4.685\sigma\)` produces 95% efficiency when the errors are normal.
+
+
+---
+
+name: Objective, Psi, and Weight Functions
+class: 
+### {{ name }}
+
+.center[
+<img src="images/rr-03-objective-psi-weight-functions.png" height="500">
+]
+
+???
+
+Let’s review: MINIMIZE the objective function 
+
+k values determine our asymptotic relative efficiency 
+
+How? Set `\(w(e)=\frac{\psi(e)}{e}\)` and solve iteratively! 
+
+Note where Huber’s and Tukey’s psi or weight functions settle at 0: these 
+are their default k values. 
+
+
+<!-- ======================================================================= -->
+---
+
+name: MM estimation and implementation options
+class: transition no-number
+count: false
+## {{ name }}
+
+* S estimation
+* MM estimation
+* R implementations
+
+???
+
+Okay, M estimation sounds great – what’s wrong with it? 
+
+Huber estimation is convex: there is a single solution, but its asymptotic 
+breakdown point is 0. A single bad observation can make your estimate 
+arbitrarily bad.
+
+Tukey estimation is redescending: the function can throw away an arbitrarily bad 
+observation, with resulting good breakdown properties, but it can have multiple 
+local minima and is dependent on its initialization.
+
+
+---
+
+name: S Estimation
+class: 
+### {{ name }}
+
+S estimates are M estimates minimizing the scale of residuals.
+
+<p>
+Scale \(s_n(u_1, ..., u_n)\) is defined by the value of \(s\) satisfying
+
+$$\frac{1}{n-p}\sum_{i=1}^n{\chi(\frac{y_i-x_i\hat{\beta}}{s})}=E_\phi(\rho)$$
+</p>
+
+By finding parameter estimates to minimize the *dispersion* of the residuals, S
+estimation achieves a high breakdown point.
+
+???
+
+The "S" estimation method solves for the scale s such that the average of a 
+function chi of the residuals divided by s is equal to a given constant 
+(typically the expected normal distribution) There are different chi functions; 
+Yohai’s, from the original 1987 paper or his later “Fast-S” algorithm, 
+Huber’s second proposal, others. 
+
+What is the limitation? S estimation’s low breakdown point. The conflict of M 
+estimation: you can have breakdown or high efficiency, but not both 
+
+Estimates covered here are not scale equivariant, so we seek to transform our 
+residuals to a common scale 
+
+
+---
+
+name: MM Estimation
+class: 
+### {{ name }}
+
+MM estimation combines a high breakdown estimate, which provides initial weights
+and the residual scale, with a high efficiency estimator, which pursues
+convergence. 
+
+How: S estimate feeds initialization values to M estimation!
+* Observation weights
+* Residual scale
+
+The resulting method has a potential efficiency of 95% and breakdown point of
+0.5.
+
+???
+
+“Potential efficiency” – the efficiency is dependent on the configuration 
+values fed to the S and M estimators. There’s some synthetic research to 
+suggest pursuing a lower efficiency of around 75% is better for practical 
+contexts with finite data. 
+
+
+---
+
+name: MM estimation
+class: 
+### {{ name }}
+
+.center[
+<img src="images/rr-04-comparison-plots.png" height="425">
+]
+
+???
+
+Important to note is, using M estimation alone (Huber or Tukey) on the bottom 
+right plot gives us the SAME prediction as OLS – initialization matters. 
+
+
+---
+
+name: MM estimation on real data
+class: 
+### {{ name }}
+
+Predicting the sale price of houses in Fairfax County between 1972 and 1995 
+using a 10-fold cross-validation process, MM estimation halves the mean error 
+and brings the median closer to zero when compared to OLS estimation. 
+
+<style type="text/css">
+.tg  {border-style:solid;border-width:1px;border-color:#999;}
+.tg td{padding:10px 10px;border-style:solid;border-width:1px;border-color:#999;}
+.tg th{padding:10px 10px;border-style:solid;border-width:1px;border-color:#999;color:#fff;background-color:#26ADE4;}
+.tg .tg-baqh{text-align:center;vertical-align:top}
+.tg .tg-v492{font-weight:bold;background-color:#126180;text-align:center}
+</style>
+
+<table class="tg" align="center">
+  <tr>
+    <th class="tg-v492">Estimation</th>
+    <th class="tg-v492">Mean Sales<br>Prediction Error</th>
+    <th class="tg-v492">Median Sales<br>Prediction Error</th>
+  </tr>
+  <tr>
+    <td class="tg-baqh">OLS</td>
+    <td class="tg-baqh">-0.04%</td>
+    <td class="tg-baqh">-0.09%</td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">MM</td>
+    <td class="tg-baqh">-0.02%</td>
+    <td class="tg-baqh">-0.06%</td>
+  </tr>
+</table>
+
+???
+
+This is a close corollary to work I am doing.
+
+
+---
+
+name: R Implementations - MASS::rlm()
+class: 
+### {{ name }}
+
+```
+rlm(log(Price) ~ Rooms + LndArea, data = train, method = 'MM')
+
+Call:
+rlm(formula = log(Price) ~ Rooms + LndArea,
+    data = fairfax, method = "MM")
+Converged in 6 iterations
+
+Coefficients:
+    (Intercept)           Rooms         LndArea 
+10.775185189583  0.134859884117  0.000005687908 
+
+Degrees of freedom: 46140 total; 46137 residual
+Scale estimate: 0.472
+```
+
+???
+
+rlm: tried-and-true, Venables and Ripley S-PLUS
+
+
+---
+
+name: R Implementations - robustbase::lmrob()
+class: 
+### {{ name }}
+
+```
+lmrob(log(Price) ~ Rooms + LndArea, data = train)
+
+Call:
+lmrob(formula = log(Price) ~ Rooms + LndArea, data = train)
+ \--> method = "MM"
+Coefficients:
+ (Intercept)         Rooms       LndArea  
+10.775191762   0.134856962   0.000005687 
+```
+
+???
+
+Lmrob: more frequently and recently updated, cutting edge methodology, less
+documented usage
+
+
+<!-- ======================================================================= -->
+---
+
+name: Limitations
+class: transition no-number
+count: false
+## {{ name }}
+
+* Data exploration
+* Multiple relationships
+
+???
+
+These are not unique limitations, I am merely reiterating cautions already 
+engrained in you for OLS and clarifying that they are still concerns for robust 
+regression 
+
+---
+
+name: Data exploration
+class: 
+### {{ name }}
+
+.center[
+<img src="images/rr-02-anscombes-quartet.png" height="425">
+]
+
+???
+
+The graphs show Anscombe’s Quartet: four datasets with a mean of 9, x variance 
+of 11, mean y 7.5, y variance ~4.122. The linear regression line is always
+y = 3 + .5x
+
+Robust regression helps against the bottom left corner plot (which opens our 
+slides), but it does not cure cancer. You still need to look at and summarize 
+your data!
+
+---
+
+name: Multiple relationships
+class: 
+### {{ name }}
+
+.center[
+<img src="images/rr-07-multiple-relationships.png" height="425">
+]
+
+
+<!-- ======================================================================= -->
+---
+
+name: Review
+class: transition no-number
+count: false
+## {{ name }}
+
+1. What is robust regression?
+2. Important concepts
+3. MM estimation and implementation options
+4. Limitations
+
+
+---
+
+name: Questions?
+class: transition no-number
+count: false
+# {{ name }}
+
+
+<!-- ======================================================================= -->
+
+
+    </textarea>
+    <script src="js/remark-201601.min.js"></script>
+    
+    <script>
+      var slideshow = remark.create({
+        ratio: '16:9',
+        slideNumberFormat: '%current% / %total%',
+        countIncrementalSlides: false,
+        highlightStyle: 'github'
+      });
+    </script>
+    
+    <script src="http://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS_HTML&delayStartupUntil=configured" type="text/javascript"></script>
+    <script src="js/enable-mthjx.js"></script>
+    
+  </body>
+</html>

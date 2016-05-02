@@ -19,7 +19,7 @@ for fn in ap_files:
     if os.path.splitext(fn)[0] in md_files:
         pass
     else:
-        with open(fn) as file:
+        with open(fn, encoding = "utf8") as file:
           sp = BeautifulSoup(file, "html.parser")
         with open(os.path.splitext(fn)[0] + ".md", "w") as outmd:
             title = sp.find_all('title')[0].string
