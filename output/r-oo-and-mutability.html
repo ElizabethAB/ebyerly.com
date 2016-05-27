@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    
+
+    <title>E. Byerly</title>
+    <link rel="stylesheet" href="http://ebyerly.com/theme/css/styles.css"/>
+    <link rel="icon" href="http://ebyerly.com/images/favicon.ico" type="image/x-icon"/>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            Menu
+          </button>
+          <h1><a class="navbar-brand icon-logo" href="http://ebyerly.com"></a></h1>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul style="font-size:16px" class="nav navbar-nav navbar-right">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Pages <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                          <li><a href="http://ebyerly.com/pages/about-me.html">About Me</a></li>
+                          <li><a href="http://ebyerly.com/pages/about-site.html">About Site</a></li>
+                      <li><a href="/category/presentations.html">Presentations</a></li>
+                      <li><a href="/category/posts.html">Posts</a></li>
+              </ul>
+            </li>
+                <li><a class="icon-mail" href="mailto:elizabeth.byerly@gmail.com"></a></li>
+                <li><a class="icon-github" href="https://github.com/ElizabethAB"></a></li>
+                <li><a class="icon-stackoverflow" href="http://stackoverflow.com/users/1657297/elizabethab"></a></li>
+                <li><a class="icon-twitter" href="https://twitter.com/ByerlyElizabeth"></a></li>
+                <li><a class="icon-linkedin" href="https://www.linkedin.com/in/elizabethbyerly"></a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <!-- content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+
+  <h1><a class="nodec" href="/r-oo-and-mutability.html" rel="bookmark" title="Permalink to R, OO, and Mutability">
+      R, OO, and Mutability
+  </a></h1>
+
+  <p class="published" title="2016-05-27T00:00:00-04:00">
+    2016-05-27
+  </p>
+
+
+  <div class="article">
+    <p>A proposal at work: adapt an executable R script into a method using object oriented programming. The idea goes against my instincts, but I wasn't able to immediately articulate my concerns. I'm thinking through the issue here and deciding whether I'm being reasonable or knee-jerk (or just a jerk).</p>
+<h3>TL;DR</h3>
+<p>R's immutable objects are a barrier to using the language within an object oriented programming paradigm. Adding mutability to R is a solved problem, but it requires adding code complexity.</p>
+<hr />
+<h2>Mutability</h2>
+<p><a href="https://en.wikipedia.org/wiki/Immutable_object">Mutability</a> is important to object oriented programming. Loosely, we can think of mutability as: can an object be changed after it is created? Changing an object is different than assigning over an object reference, in that effects calls to that object from every namespace and not only those namespaces where the assignment takes priority.</p>
+<p>Object oriented programming can be implemented in a world of immutable objects, but mutability makes attributes and stateful programming simpler to code and to think about. Mutable classes are staples in Java and Python (my coworker's and my preferred OO languages).</p>
+<p>R loves <strong>im</strong>mutable objects. It copies obsessively. Every time you can conceive of the program generating and maintaining a separate copy of data, assume it is doing so. We can mimic mutable objects in R by manipulating namespaces, but it's difficult to code, to read, and to think about.</p>
+<p>An example of a "mutable" object in R is provided below.</p>
+<div class="highlight"><pre>createMutable <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="m">.</span>mut <span class="o">&lt;-</span> <span class="kt">list</span><span class="p">()</span>
+  <span class="kr">function</span><span class="p">(</span>key <span class="o">=</span> <span class="kc">NULL</span><span class="p">,</span> val <span class="o">=</span> <span class="kc">NULL</span><span class="p">)</span> <span class="p">{</span>
+    curr <span class="o">&lt;-</span> <span class="kp">get</span><span class="p">(</span><span class="s">&quot;.mut&quot;</span><span class="p">)</span>
+    <span class="kr">if</span> <span class="p">(</span><span class="kp">is.null</span><span class="p">(</span>val<span class="p">))</span> <span class="kr">return</span><span class="p">(</span>curr<span class="p">)</span>
+    curr<span class="p">[[</span>key<span class="p">]]</span> <span class="o">&lt;-</span> val
+    <span class="m">.</span>mut <span class="o">&lt;&lt;-</span> curr
+    <span class="kp">invisible</span><span class="p">(</span><span class="m">.</span>mut<span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+mutable <span class="o">&lt;-</span> createMutable<span class="p">()</span>
+
+mutable<span class="p">(</span><span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="m">1</span><span class="p">)</span>
+mutable<span class="p">()[</span><span class="s">&quot;a&quot;</span><span class="p">]</span>
+mutable<span class="p">(</span><span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="m">3</span><span class="p">)</span>
+mutable<span class="p">()[</span><span class="s">&quot;a&quot;</span><span class="p">]</span>
+</pre></div>
+
+
+<h2>Functional v. OO programming</h2>
+<p>Immutable objects and <a href="https://en.wikipedia.org/wiki/First-class_function">first-class functions</a> make R great for functional programming. R's immutability was not an oversight.</p>
+<p>Functional programming is mocked as being an academic wheeze by-and-for mathematicians, but step back and remember R is a <em>statistical programming language</em>. For statisticians, functional programming is a practical paradigm. It's easy to reason about a system where every input can be seen and fully understood at the point a function is called. It's easy to reason about a system where a "function" operates the same way a "function" has in your prior education - outputs solely dependent on inputs. When a PhD statistician's billing rate is $600+ an hour (as in my world), making everything but the statistics easy is a priority.</p>
+<p>Object oriented programming can be helpful in situations where a program has to account for an objective reality. Some examples of objective realities in software include a user's mouse location or the status of a network connection. When you are using R for applications programming, its lack of OO assets is a real hindrance, which is why R is never recommended for applications programming. </p>
+<h2>R's built-in OO</h2>
+<p>R does make a nod to object orientation.</p>
+<p>The <a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/UseMethod.html">S3</a> and <a href="https://stat.ethz.ch/R-manual/R-devel/library/methods/html/Classes.html">S4</a> systems in R help us build genericized functions using <a href="https://en.wikipedia.org/wiki/Dynamic_dispatch">method dispatch</a> (that's why you can call <code>predict()</code> on so many different model output objects). Aside from applications duplicated by named lists, that's their most interesting use case.</p>
+<p>Below is an example of an S4 class and its immutable behavior.</p>
+<div class="highlight"><pre>setClass<span class="p">(</span><span class="s">&quot;eg&quot;</span><span class="p">,</span> slots <span class="o">=</span> <span class="kt">list</span><span class="p">(</span>attribute <span class="o">=</span> <span class="s">&quot;numeric&quot;</span><span class="p">))</span>
+my_obj <span class="o">&lt;-</span> new<span class="p">(</span><span class="s">&quot;eg&quot;</span><span class="p">,</span> attribute <span class="o">=</span> <span class="m">1</span><span class="p">)</span>
+
+my_obj<span class="o">@</span>attribute
+my_obj<span class="o">@</span>attribute <span class="o">&lt;-</span> <span class="m">2</span>
+my_obj<span class="o">@</span>attribute
+
+tmp <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">(</span>person<span class="p">)</span> <span class="p">{</span>
+  person<span class="o">@</span>attribute <span class="o">&lt;-</span> <span class="m">5</span>
+  <span class="kr">return</span><span class="p">(</span>person<span class="p">)</span>
+<span class="p">}</span>
+
+tmp<span class="p">(</span>my_obj<span class="p">)</span><span class="o">@</span>attribute
+my_obj<span class="o">@</span>attribute
+</pre></div>
+
+
+<p>R introduced a third form of OO in version 2.12, <a href="https://stat.ethz.ch/R-manual/R-devel/library/methods/html/refClass.html">RC</a>, which includes mutability. I have encountered very few packages or community scripts (and none actively developed) that take advantage of RC's functionality. That is no guarantee of its quality, either way, but it means at least two things:</p>
+<ol>
+<li>Using RC at work means committing to training on RC, as few people have prior experience, and</li>
+<li>The R community does not feel a burning need for the mutability offered by RC.</li>
+</ol>
+<h2>Conclusions</h2>
+<p>I stand by my initial reaction. Without an argument for how our use case plays to object oriented programming's strengths, implementing an OO solution in R would add technical debt and code complexity.</p>
+<p>I have no interest in discouraging the debate at work. This exercise is helping to develop my understanding of R programming and being proven wrong only means learning something new, which would be great.</p>
+<hr />
+<h3>Disclaimer</h3>
+<p>I love classes, mutability, and stateful programming. I use, and occasionally abuse, them in Python. I use R and Python differently and base my separation on what I hope to be a reasonable understanding of their relative strengths.</p>
+  </div>
+
+            </div>
+        </div>
+    </div>
+    
+    <!-- footer -->
+    <footer>
+      <div class="row">
+        <div class="col-md-12">
+          <p>
+            © Elizabeth Byerly, license <a href="http://choosealicense.com/licenses/mit/"> MIT</a> unless otherwise noted.
+          </p>
+          <p>
+            Credits: <a href= "http://docs.getpelican.com/">Pelican</a>, <a href="https://icomoon.io/">IcoMoon</a>
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- jQuery Version 1.11.1 -->
+    <script src="http://ebyerly.com/theme/js/jquery.js"></script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="http://ebyerly.com/theme/js/bootstrap.js"></script>
+    
+</body>
+
+</html>

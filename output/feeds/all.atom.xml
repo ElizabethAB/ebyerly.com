@@ -1,5 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>E. Byerly</title><link href="http://ebyerly.com/" rel="alternate"></link><link href="http://ebyerly.com/feeds/all.atom.xml" rel="self"></link><id>http://ebyerly.com/</id><updated>2016-04-12T00:00:00-04:00</updated><entry><title>Website launched</title><link href="http://ebyerly.com/website-launched.html" rel="alternate"></link><published>2016-04-12T00:00:00-04:00</published><author><name>Elizabeth Byerly</name></author><id>tag:ebyerly.com,2016-04-12:website-launched.html</id><summary type="html">&lt;p&gt;This website relies on two public technologies:&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>E. Byerly</title><link href="http://ebyerly.com/" rel="alternate"></link><link href="http://ebyerly.com/feeds/all.atom.xml" rel="self"></link><id>http://ebyerly.com/</id><updated>2016-05-27T00:00:00-04:00</updated><entry><title>R, OO, and Mutability</title><link href="http://ebyerly.com/r-oo-and-mutability.html" rel="alternate"></link><published>2016-05-27T00:00:00-04:00</published><author><name>Elizabeth Byerly</name></author><id>tag:ebyerly.com,2016-05-27:r-oo-and-mutability.html</id><summary type="html">&lt;p&gt;A proposal at work: adapt an executable R script into a method using object oriented programming. The idea goes against my instincts, but I wasn't able to immediately articulate my concerns. I'm thinking through the issue here and deciding whether I'm being reasonable or knee-jerk (or just a jerk).&lt;/p&gt;
+&lt;h3&gt;TL;DR&lt;/h3&gt;
+&lt;p&gt;R's immutable objects are a barrier to using the language within an object oriented programming paradigm. Adding mutability to R is a solved problem, but it requires adding code complexity.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h2&gt;Mutability&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://en.wikipedia.org/wiki/Immutable_object"&gt;Mutability&lt;/a&gt; is important to object oriented programming. Loosely, we can think of mutability as: can an object be changed after it is created? Changing an object is different than assigning over an object reference, in that effects calls to that object from every namespace and not only those namespaces where the assignment takes priority.&lt;/p&gt;
+&lt;p&gt;Object oriented programming can be implemented in a world of immutable objects, but mutability makes attributes and stateful programming simpler to code and to think about. Mutable classes are staples in Java and Python (my coworker's and my preferred OO languages).&lt;/p&gt;
+&lt;p&gt;R loves &lt;strong&gt;im&lt;/strong&gt;mutable objects. It copies obsessively. Every time you can conceive of the program generating and maintaining a separate copy of data, assume it is doing so. We can mimic mutable objects in R by manipulating namespaces, but it's difficult to code, to read, and to think about.&lt;/p&gt;
+&lt;p&gt;An example of a "mutable" object in R is provided below.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;createMutable &lt;span class="o"&gt;&amp;lt;-&lt;/span&gt; &lt;span class="kr"&gt;function&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="m"&gt;.&lt;/span&gt;mut &lt;span class="o"&gt;&amp;lt;-&lt;/span&gt; &lt;span class="kt"&gt;list&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+  &lt;span class="kr"&gt;function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;key &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; val &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    curr &lt;span class="o"&gt;&amp;lt;-&lt;/span&gt; &lt;span class="kp"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;.mut&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="kr"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kp"&gt;is.null&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;val&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="kr"&gt;return&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;curr&lt;span class="p"&gt;)&lt;/span&gt;
+    curr&lt;span class="p"&gt;[[&lt;/span&gt;key&lt;span class="p"&gt;]]&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;-&lt;/span&gt; val
+    &lt;span class="m"&gt;.&lt;/span&gt;mut &lt;span class="o"&gt;&amp;lt;&amp;lt;-&lt;/span&gt; curr
+    &lt;span class="kp"&gt;invisible&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="m"&gt;.&lt;/span&gt;mut&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+mutable &lt;span class="o"&gt;&amp;lt;-&lt;/span&gt; createMutable&lt;span class="p"&gt;()&lt;/span&gt;
+
+mutable&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;a&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+mutable&lt;span class="p"&gt;()[&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;a&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+mutable&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;a&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="m"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+mutable&lt;span class="p"&gt;()[&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;a&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;Functional v. OO programming&lt;/h2&gt;
+&lt;p&gt;Immutable objects and &lt;a href="https://en.wikipedia.org/wiki/First-class_function"&gt;first-class functions&lt;/a&gt; make R great for functional programming. R's immutability was not an oversight.&lt;/p&gt;
+&lt;p&gt;Functional programming is mocked as being an academic wheeze by-and-for mathematicians, but step back and remember R is a &lt;em&gt;statistical programming language&lt;/em&gt;. For statisticians, functional programming is a practical paradigm. It's easy to reason about a system where every input can be seen and fully understood at the point a function is called. It's easy to reason about a system where a "function" operates the same way a "function" has in your prior education - outputs solely dependent on inputs. When a PhD statistician's billing rate is $600+ an hour (as in my world), making everything but the statistics easy is a priority.&lt;/p&gt;
+&lt;p&gt;Object oriented programming can be helpful in situations where a program has to account for an objective reality. Some examples of objective realities in software include a user's mouse location or the status of a network connection. When you are using R for applications programming, its lack of OO assets is a real hindrance, which is why R is never recommended for applications programming. &lt;/p&gt;
+&lt;h2&gt;R's built-in OO&lt;/h2&gt;
+&lt;p&gt;R does make a nod to object orientation.&lt;/p&gt;
+&lt;p&gt;The &lt;a href="https://stat.ethz.ch/R-manual/R-devel/library/base/html/UseMethod.html"&gt;S3&lt;/a&gt; and &lt;a href="https://stat.ethz.ch/R-manual/R-devel/library/methods/html/Classes.html"&gt;S4&lt;/a&gt; systems in R help us build genericized functions using &lt;a href="https://en.wikipedia.org/wiki/Dynamic_dispatch"&gt;method dispatch&lt;/a&gt; (that's why you can call &lt;code&gt;predict()&lt;/code&gt; on so many different model output objects). Aside from applications duplicated by named lists, that's their most interesting use case.&lt;/p&gt;
+&lt;p&gt;Below is an example of an S4 class and its immutable behavior.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;setClass&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;eg&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; slots &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kt"&gt;list&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;attribute &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;numeric&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+my_obj &lt;span class="o"&gt;&amp;lt;-&lt;/span&gt; new&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;eg&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; attribute &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="m"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+my_obj&lt;span class="o"&gt;@&lt;/span&gt;attribute
+my_obj&lt;span class="o"&gt;@&lt;/span&gt;attribute &lt;span class="o"&gt;&amp;lt;-&lt;/span&gt; &lt;span class="m"&gt;2&lt;/span&gt;
+my_obj&lt;span class="o"&gt;@&lt;/span&gt;attribute
+
+tmp &lt;span class="o"&gt;&amp;lt;-&lt;/span&gt; &lt;span class="kr"&gt;function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;person&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  person&lt;span class="o"&gt;@&lt;/span&gt;attribute &lt;span class="o"&gt;&amp;lt;-&lt;/span&gt; &lt;span class="m"&gt;5&lt;/span&gt;
+  &lt;span class="kr"&gt;return&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;person&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+tmp&lt;span class="p"&gt;(&lt;/span&gt;my_obj&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;@&lt;/span&gt;attribute
+my_obj&lt;span class="o"&gt;@&lt;/span&gt;attribute
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;R introduced a third form of OO in version 2.12, &lt;a href="https://stat.ethz.ch/R-manual/R-devel/library/methods/html/refClass.html"&gt;RC&lt;/a&gt;, which includes mutability. I have encountered very few packages or community scripts (and none actively developed) that take advantage of RC's functionality. That is no guarantee of its quality, either way, but it means at least two things:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Using RC at work means committing to training on RC, as few people have prior experience, and&lt;/li&gt;
+&lt;li&gt;The R community does not feel a burning need for the mutability offered by RC.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2&gt;Conclusions&lt;/h2&gt;
+&lt;p&gt;I stand by my initial reaction. Without an argument for how our use case plays to object oriented programming's strengths, implementing an OO solution in R would add technical debt and code complexity.&lt;/p&gt;
+&lt;p&gt;I have no interest in discouraging the debate at work. This exercise is helping to develop my understanding of R programming and being proven wrong only means learning something new, which would be great.&lt;/p&gt;
+&lt;hr /&gt;
+&lt;h3&gt;Disclaimer&lt;/h3&gt;
+&lt;p&gt;I love classes, mutability, and stateful programming. I use, and occasionally abuse, them in Python. I use R and Python differently and base my separation on what I hope to be a reasonable understanding of their relative strengths.&lt;/p&gt;</summary><category term="r"></category><category term="java"></category><category term="oo"></category><category term="mutability"></category></entry><entry><title>Website launched</title><link href="http://ebyerly.com/website-launched.html" rel="alternate"></link><published>2016-04-12T00:00:00-04:00</published><author><name>Elizabeth Byerly</name></author><id>tag:ebyerly.com,2016-04-12:website-launched.html</id><summary type="html">&lt;p&gt;This website relies on two public technologies:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="http://blog.getpelican.com/"&gt;Pelican&lt;/a&gt; for conversion of Markdown into
     styled HTML&lt;/li&gt;
