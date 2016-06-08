@@ -1,10 +1,12 @@
 alabaster==0.7.6
 anaconda-client==1.2.1
 argcomplete==1.0.0
+arrow==0.7.0
 astropy==1.0.6
 awscli==1.10.18
 Babel==2.1.1
 beautifulsoup4==4.4.1
+binaryornot==0.4.0
 bitarray==0.8.1
 blaze==0.8.3
 blinker==1.4
@@ -14,6 +16,8 @@ boto3==1.2.3
 botocore==1.4.9
 Bottleneck==1.0.0
 cffi==1.2.1
+chardet==2.3.0
+click==6.6
 clyent==1.2.0
 colorama==0.3.3
 comtypes==1.1.2
@@ -21,6 +25,7 @@ conda==3.18.8
 conda-build==1.18.2
 conda-env==2.4.5
 configobj==5.0.6
+cookiecutter==1.4.0
 cryptography==1.0.1
 cycler==0.9.0
 Cython==0.23.4
@@ -33,6 +38,7 @@ ecdsa==0.13
 fastcache==1.0.2
 feedgenerator==1.8
 Flask==0.10.1
+future==0.15.2
 greenlet==0.4.9
 h5py==2.5.0
 idna==2.0
@@ -45,6 +51,7 @@ itsdangerous==0.24
 jdcal==1.0
 jedi==0.9.0
 Jinja2==2.8
+jinja2-time==0.1.0
 jmespath==0.9.0
 jsonschema==2.4.0
 jupyter==1.0.0
@@ -80,6 +87,7 @@ pep8==1.6.2
 pickleshare==0.5
 Pillow==3.0.0
 ply==3.8
+poyo==0.4.0
 psutil==3.3.0
 py==1.4.30
 pyasn1==0.1.9
@@ -126,6 +134,7 @@ unicodecsv==0.14.1
 Unidecode==0.4.19
 virtualenv==15.0.1
 Werkzeug==0.11.2
+whichcraft==0.4.0
 xlrd==0.9.4
 XlsxWriter==0.7.7
 xlwings==0.5.0

@@ -6,11 +6,11 @@ Data | Programming | Systems
 
 I work as a systems architect and statistical programmer.
 
-My statistical programming experience includes data ingestion and ETL, 
-exploratory data analysis, modeling, and reporting. Systems architecture, 
-including application programming, machine images, and networking, allows me to 
-make statistical programming tasks distributed and scalable. Intuitive and fast 
-architectures for data analysis means focusing on solving complex problems. 
+Systems architecture has meant collaborating with end users to design analytics
+platforms that scale to their need, then using application programming, secure
+networking, and sysadmin tools to develop and deploy that platform. My
+statistical programming experience includes data ingestion and ETL, exploratory
+data analysis, modeling, and reporting.
 
 
 ## Technical Skills
@@ -23,15 +23,16 @@ shell,
 SQL,
 C++,
 Julia,
-Stata
+Stata 
 
 ### Technologies
 
 AWS,
-PostgreSQL,
 Linux,
+PostgreSQL,
 git,
 SSH,
+SSL,
 NFS,
 Make,
 Hadoop,
@@ -47,7 +48,7 @@ Tableau
 
 ### Statistics and Machine Learning
 
-Regression models,
+Regressions,
 robust statistics,
 ensemble methods,
 model validation
@@ -68,22 +69,24 @@ machine learning, databases, and version control.
 
 Project examples:
 
-* Improved the runtime of a computationally intensive model from 180 hours to
-  19 hours using parallelization and cloud resources. The reduced runtime made
-  it feasible to update, and render more defensible, an econometric model 
-  submitted as expert witness material in $20+ billion dollar litigation.
-* Developed automated report generation, saving more than 25 skilled labor
-  hours at each iteration of data and building in continuous quality control.
-  Automation was accomplished using Python to interact with the AWS API, R 
-  scripts, and Stata programs.
-* Coordinated internal staff and external teaming partners' work on a shared
-  cloud platform. A common working environment was provided seamlessly and
-  securely using imaging, network management, and user access permissions.
+* Improved the runtime of a computationally intensive model from 180 hours to 19
+  hours with parallelization on cloud resources, introducing cloud computing to
+  the firm. The reduction made it feasible to update, and render more
+  defensible, an econometric model submitted as expert witness material in $20+
+  billion litigation.
+* Transitioned internal staff and external teaming partners’ work onto a shared
+  cloud platform to solve coordination and data sharing problems. The common
+  working environment was provided seamlessly and securely using network
+  controls, user access management, a network file system, imaging, and a hosted
+  code repository.
+* Automated report generation, saving more than 25 skilled labor hours at each
+  iteration of data and incorporating continuous quality control, using Python
+  to interact with AWS, R, and Stata.
 * Researched, implemented, and reported on robust regression methods ultimately
   included as the method of choice in expert witness testimony.
-* Rewrote a data ingestion pipeline, using shell utilities to improve processing
-  time by orders of magnitude and avoiding conversion artifacts created by the 
-  original process's unintended type enforcement.
+* Rewrote a data ingestion pipeline using shell utilities, improving processing
+  time by orders of magnitude and avoiding conversion artifacts from unintended
+  type enforcement.
 
 
 ### Invited Speaker
