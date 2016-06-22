@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    
+
+    <title>E. Byerly</title>
+    <link rel="stylesheet" href="http://dev.ebyerly.com/theme/css/styles.css"/>
+    <link rel="icon" href="http://dev.ebyerly.com/images/favicon.ico" type="image/x-icon"/>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            Menu
+          </button>
+          <h1><a class="navbar-brand icon-logo" href="http://dev.ebyerly.com"></a></h1>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul style="font-size:16px" class="nav navbar-nav navbar-right">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Pages <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                          <li><a href="http://dev.ebyerly.com/pages/about-me.html">About Me</a></li>
+                          <li><a href="http://dev.ebyerly.com/pages/about-site.html">About Site</a></li>
+                      <li><a href="/category/presentations.html">Presentations</a></li>
+                      <li><a href="/category/posts.html">Posts</a></li>
+              </ul>
+            </li>
+                <li><a class="icon-mail" href="mailto:elizabeth.byerly@gmail.com"></a></li>
+                <li><a class="icon-github" href="https://github.com/ElizabethAB"></a></li>
+                <li><a class="icon-stackoverflow" href="http://stackoverflow.com/users/1657297/elizabethab"></a></li>
+                <li><a class="icon-twitter" href="https://twitter.com/ByerlyElizabeth"></a></li>
+                <li><a class="icon-linkedin" href="https://www.linkedin.com/in/elizabethbyerly"></a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <!-- content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+
+  <h1><a class="nodec" href="/python-threading-examples.html" rel="bookmark" title="Permalink to Python Threading Examples">
+      Python Threading Examples
+  </a></h1>
+
+  <p class="published" title="2016-06-22T00:00:00-04:00">
+    2016-06-22
+  </p>
+
+
+  <div class="article">
+    <p>I am a huge fan of Python's <a href="https://docs.python.org/3/">documentation</a>. It's intuitive to navigate, the contents are easy to read, and it almost always provides great working examples of functions and modules in action.</p>
+<p>An unfortunate exception is Python's <a href="https://docs.python.org/3/library/threading.html"><code>threading</code> module</a>. It is easy to use! You would have no idea of that looking at the docs!</p>
+<p>I'm going to bolster the doc's contents with three starter examples:</p>
+<ol>
+<li>Threads that execute functions without arguments</li>
+<li>Threads that execute functions with arguments specified by placement and by keyword</li>
+<li>Threads that take advantage of <a href="https://docs.python.org/3/library/asyncio-queue.html"><code>Queue</code> objects</a> to pull in their arguments while a function executes</li>
+</ol>
+<p>You can get fancy with threads, particularly by taking advantage of subclassing <a href="https://docs.python.org/3/library/threading.html#thread-objects"><code>threading.Thread</code></a>, but getting started with boring modifiable examples helps <em>me</em> and now it can help <em>you</em>.</p>
+<hr />
+<h3>TL;DR</h3>
+<p>Create a thread:</p>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">threading</span>
+
+
+<span class="k">def</span> <span class="nf">some_func</span><span class="p">(</span><span class="n">one</span><span class="p">,</span> <span class="n">two</span><span class="p">,</span> <span class="n">an_arg</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">one</span> <span class="o">+</span> <span class="n">two</span> <span class="o">*</span> <span class="n">an_arg</span>
+
+
+<span class="n">eg</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">some_func</span><span class="p">,</span>
+                      <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                      <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;an_arg&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span>
+</pre></div>
+
+
+<p>Start the thread (run its target function):</p>
+<div class="highlight"><pre><span class="n">eg</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+
+
+<p>Check if the thread's target function is still running (great for <code>while</code> loops):</p>
+<div class="highlight"><pre><span class="n">eg</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span>
+</pre></div>
+
+
+<p>Make your main program wait for a thread to finish:</p>
+<div class="highlight"><pre><span class="n">eg</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+</pre></div>
+
+
+<hr />
+<p>Hey, wait, where's my output? Threads run separately from your main program and interact with it by a shared memory space. Try using a function that directly manipulates a global object (by declaration or by using a mutable object as an input).</p>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">threading</span>
+
+
+<span class="k">def</span> <span class="nf">some_func</span><span class="p">(</span><span class="n">one</span><span class="p">,</span> <span class="n">two</span><span class="p">,</span> <span class="n">an_arg</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">my_var</span>
+    <span class="n">my_var</span> <span class="o">+=</span> <span class="n">one</span> <span class="o">+</span> <span class="n">two</span>
+    <span class="n">an_arg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">my_var</span><span class="p">)</span>
+
+
+<span class="n">my_var</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">my_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">eg</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">some_func</span><span class="p">,</span>
+                      <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                      <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;an_arg&quot;</span><span class="p">:</span> <span class="n">my_list</span><span class="p">})</span>
+<span class="n">eg</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">eg</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+<span class="n">my_var</span>
+<span class="n">my_list</span>
+</pre></div>
+
+
+<p>Spoiler alert: <a href="https://en.wikipedia.org/wiki/Concurrency_(computer_science)">concurrency</a> can be <a href="http://www.dabeaz.com/usenix2009/concurrent/race.py">hard</a>. Python's <code>threading</code> module has a lot of tools to help you deal with concurrency, none of which I'm going to deal with below. Just know you need to understand <em>when</em> and <em>how</em> multiple threads share objects if your use case needs them to share objects.</p>
+<hr />
+<h2>Threads that execute functions without arguments</h2>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+
+<span class="k">def</span> <span class="nf">a_thread</span><span class="p">():</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Oh no, we&#39;re in a thread!&quot;</span><span class="p">)</span>
+
+
+<span class="n">eg</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">a_thread</span><span class="p">)</span>
+<span class="n">eg</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">eg</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+</pre></div>
+
+
+<p>Did you know that logging from a thread is stupid simple? Like, change-none-of-your-code simple? Yeah, me too, because the logging documentation has a <a href="https://docs.python.org/3/howto/logging-cookbook.html#logging-from-multiple-threads">great example</a> in its cookbook!</p>
+<hr />
+<h2>Threads that execute functions with arguments specified by placement and by keyword</h2>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+
+<span class="k">def</span> <span class="nf">a_thread_with_arguments</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">arbitrary</span><span class="p">):</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Our arguments are </span><span class="si">%d</span><span class="s">, </span><span class="si">%d</span><span class="s">, </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">arbitrary</span><span class="p">)</span>
+
+
+<span class="n">eg</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">a_thread_with_arguments</span><span class="p">,</span>
+                      <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                      <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;arbitrary&quot;</span><span class="p">:</span> <span class="mi">42</span><span class="p">})</span>
+<span class="n">eg</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">eg</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+</pre></div>
+
+
+<h3>Oh, how about running multiple threads simultaneously...</h3>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">randint</span>
+
+
+<span class="k">def</span> <span class="nf">a_thread_with_arguments</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">arbitrary</span><span class="p">):</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Our arguments are </span><span class="si">%d</span><span class="s">, </span><span class="si">%d</span><span class="s">, </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">arbitrary</span><span class="p">)</span>
+
+
+<span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">curr_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">a_thread_with_arguments</span><span class="p">,</span>
+                                       <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                                       <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;arbitrary&quot;</span><span class="p">:</span> <span class="n">val</span><span class="p">})</span>
+    <span class="n">curr_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</pre></div>
+
+
+<hr />
+<h2>Threads that take advantage of <code>Queue</code> objects to pull in their arguments while a function executes</h2>
+<p>The closest thing I'm getting to an intermediate topic is an example of how to use Python's queues to pass arguments into running threads.</p>
+<p>We're going to use the <code>threading</code> and <code>queue</code> modules, of course, as well as the <code>logging</code> module again.</p>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">queue</span> <span class="kn">import</span> <span class="n">Queue</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+</pre></div>
+
+
+<p>We change how the log files are written so that they explicitly tell us which thread creates an entry (<code>%(threadName)s</code>).</p>
+<div class="highlight"><pre><span class="n">ft</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="n">fmt</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%(asctime)s</span><span class="s">:</span><span class="si">%(msecs)d</span><span class="s">|</span><span class="si">%(threadName)s</span><span class="s">|</span><span class="si">%(message)s</span><span class="s">&quot;</span><span class="p">),</span>
+                       <span class="n">datefmt</span><span class="o">=</span><span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s"> %H:%M:%S&quot;</span><span class="p">)</span>
+<span class="n">ch</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+<span class="n">ch</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">ft</span><span class="p">)</span>
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">log</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Now, we define a function that we're going to set as our threads' targets. It takes as its only argument a <code>Queue</code> object. It runs forever (note our infinite <code>while True</code> loop), always trying to get a value from its <code>a_queue</code>.</p>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">a_thread_with_queue</span><span class="p">(</span><span class="n">a_queue</span><span class="p">):</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">queue_val</span> <span class="o">=</span> <span class="n">a_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;This is </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">queue_val</span><span class="p">)</span>
+        <span class="n">a_queue</span><span class="o">.</span><span class="n">task_done</span><span class="p">()</span>
+</pre></div>
+
+
+<p>Finally, we make a <code>Queue</code>, ten <code>Thread</code>s all refering to our queue, and then feed our queue the integers 0-99 to print to our log!</p>
+<div class="highlight"><pre><span class="n">my_queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+
+<span class="n">my_threads</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">curr_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">a_thread_with_queue</span><span class="p">,</span>
+                                   <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">my_queue</span><span class="p">,))</span>
+    <span class="n">curr_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">my_threads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curr_thread</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+    <span class="n">my_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</pre></div>
+
+
+<hr />
+<h2>Conclusion</h2>
+<p>See? Threading is easy.</p>
+<p>(...when we omit everything that makes threading hard. Let's call what I've covered the base case: not interesting on its own, but essential to understand before you get to the good stuff!)</p>
+  </div>
+
+            </div>
+        </div>
+    </div>
+    
+    <!-- footer -->
+    <footer>
+      <div class="row">
+        <div class="col-md-12">
+          <p>
+            © Elizabeth Byerly, license <a href="http://choosealicense.com/licenses/mit/"> MIT</a> unless otherwise noted.
+          </p>
+          <p>
+            Credits: <a href= "http://docs.getpelican.com/">Pelican</a>, <a href="https://icomoon.io/">IcoMoon</a>
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- jQuery Version 1.11.1 -->
+    <script src="http://dev.ebyerly.com/theme/js/jquery.js"></script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="http://dev.ebyerly.com/theme/js/bootstrap.js"></script>
+    
+</body>
+
+</html>
