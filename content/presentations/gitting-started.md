@@ -7,7 +7,7 @@ generator: pandoc
 viewport: width=device-width, initial-scale=1
 apple-mobile-web-app-capable: yes
 
-[Gitting Started: Git and GitLab]({filename}/presentations/gitting-started.html)
+Slides: [Gitting Started: Git and GitLab]({filename}/presentations/gitting-started.html)
 
 Originally composed to get a team of Windows-based analysts with zero command
 line experience working with Git and a private installation of GitLab. Here,

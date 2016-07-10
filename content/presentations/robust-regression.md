@@ -4,7 +4,7 @@ date: 2015-03-13
 authors: Elizabeth Byerly
 summary: A primer on robust regression methods
 
-[Robust Regression: Theory and Implementation in R]({filename}/presentations/robust-regression.html)
+Slides: [Robust Regression: Theory and Implementation in R]({filename}/presentations/robust-regression.html)
 
 Press `P` for presenter's notes.
 

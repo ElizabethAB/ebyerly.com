@@ -4,7 +4,7 @@ date: 2016-04-09
 authors: Elizabeth Byerly
 summary: Basic data intake notes for DataFest 2016
 
-[Data Intake: Defining, Cleaning and Merging]({filename}/presentations/data-intake-basic.html)
+Slides: [Data Intake: Defining, Cleaning and Merging]({filename}/presentations/data-intake-basic.html)
 
 Press `P` for presenter's notes.
 

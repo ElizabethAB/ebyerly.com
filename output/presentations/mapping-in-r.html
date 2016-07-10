@@ -1,0 +1,607 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="css/reveal-201606.css">
+        <link rel="stylesheet" href="css/reveal-theme-201606.css">
+        <link rel="stylesheet" href="css/highlight-default.css">
+        
+
+        <title>Mapping in R</title>
+        <meta name="tags" content="r,mapping,visualization,gis,apis" />
+        <meta name="date" content="2015-07-31" />
+        <meta name="authors" content="Elizabeth Byerly, Jacob Patteron-Stein" />
+        <meta name="summary" content="Principles of map graphics, recommended functions and packages" />
+        
+    </head>
+    <body>
+
+        <div class="reveal">
+            <div class="slides">
+            
+<!-- ======================================================================= -->
+            
+                <section>
+                    <h1>Mapping in R</h1>
+                    <br>
+                    <p><a href="https://twitter.com/ByerlyElizabeth">Elizabeth Byerly</a><br><a href="https://twitter.com/jacobpstein">Jacob Patterson-Stein</a></p>
+                    <p>2015-07-31</p>
+                    
+                    <p style="text-align:right;font-size:.5em">
+                    Press "s" for presenter's notes
+                    <br>
+                    Code: <a href="https://github.com/ElizabethAB/mapping_in_r">mapping_in_r</a>
+                    </p>
+                    
+                    <aside class="notes">
+                        This presentation will be useful and interesting if you do not know R. Knowing R will help you follow the code examples, but the content is geared toward:
+                        <ul>
+                            <li>considerations relevant to map graphics generally, and</li>
+                            <li>showcasing the tools in R available to you whenever you have a relevant use case.</li>
+                        </ul>
+                        The code included on the slides does not fully reproduce all graphics (it focuses on the map graphic commands and omits visual tweaks). Please refer to the linked <a href="https://github.com/ElizabethAB/mapping_in_r">Github page</a> for the full code.
+                    </aside>
+                </section>
+                
+<!-- ======================================================================= -->
+
+                <section data-background="#126180">
+                    <h2 style="color:#fff;text-align:center;">Purpose</h2>
+                    <img src="images/mapinr-1-open.png" style="width:400px">
+                </section>
+                
+                <section>
+                    <h3>Map graphics communicate spatially distributed data</h3>
+                    <ul>
+                        <li>Quick map plots help identify spatial dependencies (<em>exploratory data analysis</em>)</li>
+                        <li>Presenting results by administrative unit helps inform policy-making</li>
+                        <li>Tying data to relatable landmarks builds compelling narratives</li>
+                    </ul>
+                </section>
+                
+                <section>
+                    <p>
+                    You will leave with:
+                    <br>
+                        <ul>
+                            <li>High-level best practices for map graphics</li>
+                            <li>Tools to begin making map graphics using the R language</li>
+                            <li>Troubleshooting steps when you encounter problems</li>
+                        </ul>
+                    </p>
+                </section>
+                
+                <section>
+                    <h2>Agenda</h2>
+                    <ol>
+                        <li>What makes a good map graphic?</li>
+                        <li>Mapping in R</li>
+                        <li>Troubleshooting mapping in R</li>
+                    </ol>
+                </section>
+
+                
+<!-- ======================================================================= -->
+
+                <section data-background="#126180">
+                    <h2 style="color:#fff;text-align:center;">
+                        What makes a good map graphic?
+                    </h2>
+                    <p style="color:#fff;">
+                    Intuitive<br>
+                    Appropriate<br>
+                    Visually appealing
+                    </p>
+                    
+                    <aside class="notes">
+                    <ul>
+                        <li>Intuitive: You get a sense of meaning at a glance</li>
+                        <li>Appropriate: The derived meaning provides actionable information</li>
+                        <li>Visually appealing: Presentation always matters.</li>
+                    </ul>
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Intuitive</h2>
+                    <img src="images/mapinr-2-bad1.jpg" alt="http://goo.gl/HST9GT" style="float:left;width:48%">
+                    <img src="images/mapinr-3-bad2.png" alt="http://edm.com/articles/2014-10-29/pandora-data-us" style="float:right;width:48%">
+                    
+                    <aside class="notes">
+                        These two maps fall into traps. The left is a punchline, but the right is a typical mistake: using an ordered visual, one color hue along scaled saturation and values, to represent categorical values.
+                        <br>
+                        Intuitive maps use visual pre-attentive variables: location, size, transparency, texture, color value/hue/saturation, orientation, and shape. Which to use depends on whether your data is quantitative, ordered, categorical, associated, or disassociated. These are general graphic rules; they do not change because you're on a map.
+                        <br>
+                        The best test for a map, as with any graphic, is to show it to someone outside your current project and confirm they can parse out the meaning.
+                        <br>
+                        <ul>
+                            <li>Red = Bad</li>
+                            <li>Take advantage of R's color packages</li>
+                            <li>Know your palettes</li>
+                            <li>More can be more, but sometimes more can be less</li>
+                        </ul>
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Appropriate</h2>
+                    <img src="images/mapinr-4-levels1.gif" alt="http://my.ilstu.edu/~jrcarter/Geo204/Choro/Tom/" style="float:left;width:48%">
+                    <img src="images/mapinr-5-levels2.gif" alt="http://my.ilstu.edu/~jrcarter/Geo204/Choro/Tom/" style="float:right;width:48%">
+                    
+                    <aside class="notes">
+                        These maps show how dramatically the analyst's choice of bucket values can impact the message of the map.
+                        <br>
+                        Plot your data in non-map form first to understand the non-spatial elements' distributions. Make a decision of how to represent the data on a map with consideration to how the information will be used (i.e., if these maps are used to determine Spanish-speaking staff requirements at federal offices, they will imply drastically different decisions).
+                        <br>
+                        <ul>
+                            <li>Why is a map more relevant than a bar/dist/scatter?</li>
+                            <li>What are you trying to present to your audience?</li>
+                        </ul>
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Visually Appealing</h2>
+                    <img src="images/mapinr-6-appealing.jpg" alt="Weldon Cooper Center for Public Service" style="float:center;width:96%">
+                    
+                    <aside class="notes">
+                        One of the main reasons we use map graphics, even when a bar graph really would show the same information, is that it is visually compelling. We attach significance to the image as more "real" and we can double down on this irrational inflation of importance by making the graphic attractive.
+                    </aside>
+                </section>
+                
+                
+<!-- ======================================================================= -->
+
+                <section data-background="#126180">
+                    <h2 style="color:#fff;text-align:center;">
+                        Mapping in R
+                    </h2>
+                    <p style="color:#fff;">
+                    Why R?<br>
+                    Your first map graphic<br>
+                    Raster and vector maps<br>
+                    Graphing over maps
+                    </p>
+                    
+                    <aside class="notes">
+                        We'll cover:
+                        <ul>
+                            <li>Why R is a preferred platform for generating map graphics</li>
+                            <li>The single line of demo code to produce your first map graphic</li>
+                            <li>An overview of how we can source our maps in R as a raster image or as vector and a comparison of these types' respective qualities</li>
+                            <li>Examples produced in R implementing a series of classic map graphic overlays (dot density, graduated scale, choropleth, and isopleth)</li>
+                        </ul>
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Why R?</h2>
+                    <ul style="float:left;width:50%">
+                        <li>Free</li>
+                        <li>Community supported</li>
+                        <li>Attractive, informative, and fully reproducible graphics</li>
+                    </ul>
+                    <img src="images/mapinr-7-procumun.jpg" alt="https://procomun.wordpress.com/2012/02/20/maps_with_r_2/" style="float:right;width:44%">
+                    
+                    <aside class="notes">
+                        R is free, the packages on which this presentation relies are free, they are open source (meaning we can look at the code to confirm it does what we intend, as can the entire R community), and there is a large body of active R users online offering tutorials, advice, and troubleshooting help.
+                        <br>
+                        Most importantly: R can produce map graphics which are informative and attractive entirely through reproducible code (as opposed to relying on post-processing in Paint or Photoshop). This is an important standard for data analysis.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Why R.</h2>
+                    <img src="images/mapinr-8-aspirational.png" alt="http://spatial.ly/2012/02/great-maps-ggplot2/" style="float:center;height:70%">
+                    
+                    <aside class="notes">
+                        This map was produced in R and is a gorgeous example of how far we can push reproducible map graphics.
+                        <br>
+                        You will not be making this map at the end of today, as it relies on extending on the ggplot2 graphical library (and a good design sense). Consider it aspirational.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Your first map</h2>
+                    <pre><code data-trim class="r">
+qmap("601 New Jersey Ave NW, Washington, DC")
+                    </code></pre>
+                    
+                    <img src="images/mapinr-9-first.png" style="float:center;height:50%">
+                    
+                    <aside class="notes">
+                        This is a map you can make by the end of today. We all start somewhere.
+                        <br>
+                        `qmap()` means "quick map" from the `ggmap` package. It's an easy-to-use abstraction of the `get_map()` and `ggmap()` functions (about which more later). We feed it an address, a lat-lon set, or a bounding box, and it returns a raster map. In our case, it automagically geocodes a provided address.
+                        <br>
+                        A map on its own is a <b>reference</b> map (like we have here) or a <b>topographic</b> map (if we had pulled up a map showing hills, valleys, and bodies of water). What we care about as analysts are <b>thematic</b> maps which overlay information above the spatial and topographic features. You cannot call a map of London an "infographic," not even if it has streets, but you CAN if you visually encode those streets with traffic densities during rush hour.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Your first map plot</h2>
+                    <pre><code data-trim class="r">
+eg <- data.frame(geocode(c("601 New Jersey Ave NW, Washington, DC",
+                           "Union Station Metro, Washington, DC",
+                           "Judiciary Square Metro, Washington, DC")))
+qmplot(data = eg, x = lon, y = lat, zoom = 18, f = 1.1, size = I(3))
+                    </code></pre>
+                    
+                    <img src="images/mapinr-10-firstplot.png" style="float:center;height:40%">
+                    
+                    <aside class="notes">
+                        This is our first <b>thematic</b> map. It three locations: Summit Consulting and its flanking metro stations.
+                        <br>
+                        `qmap()` returns a map, `qmplot()` returns a map plot. The `qmplot()` function will use the bounding box values of the x and y mapped values to automatically source a raster map, (the image of Washington DC with a bit of Union Station), and can be used to produce simple graph types like this dot point map.
+                        <br>
+                        Note we use the `geocode()` function, which returns longitude and latitude variable values identifying the location of the address provided.
+                    </aside>
+                </section>
+                
+<!-- ----------------------------------------------------------------------- -->
+
+                <section data-background="#b1e1f4">
+                    <h2 style="text-align:left">
+                        Rasters and Vectors
+                    </h2>
+                    
+                    <aside class="notes">
+                        `qmap()` and `qplot()` are good starting points, especially for EDA, but they are unwieldy to use for customizing images. We're going to need to think about our MAP and our DATA separately.
+                        <br>
+                        To start thinking about our map data, we'll talk at a high level about the difference between raster images and vector spatial data.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>Raster</h3>
+                    <ul>
+                        <li>A raster map is an image of a map</li>
+                        <li>Appropriate for spatial point data</li>
+                        <li>More attractive, more default options, less customizable</li>
+                    </ul>
+                    <h3>Vector</h3>
+                    <ul>
+                        <li>A vector map is composed of polygons</li>
+                        <li>Appropriate for area-coded data</li>
+                        <li>Customizable, flexible applications, less attractive for equivalent work</li>
+                    </ul>
+                    
+                    <aside class="notes">
+                        The best source of raster maps is the "ggmaps" package: it is easy to use, well documented, flexible, and created by two respected R developers (Wickham and Kahle). 
+                        <br>
+                        There is no best source for vector maps, but here are two starting recommendations:
+                        <ul>
+                            <li>EDA: "maps" and "choroplethr" packages. Easy-to-use datasets for common use cases like the globe, US states/counties, many more. Their weakness is how frequently their maps are updated (there is an apocryphal tale of the analyst mapping Europe and finding the Socialist Federal Republic of Yugoslavia proudly represented).</li>
+                            <li>Production: it is straightforward to load shapefiles from trusted sources (e.g., US Census) into R. We will show an example of how this can be done.</li>
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Raster maps from `ggmap()`</h2>
+                    <pre><code data-trim class="r">
+ggmap(get_map("601 New Jersey Ave NW, Washington, DC",
+              zoom = 12, source = "stamen", maptype = ...)
+                    </code></pre>
+                    
+                    <img src="images/mapinr-11-rasteregs.png" style="float:center;height:45%">
+                    
+                    <aside class="notes">
+                        This is a small selection of the raster image types you can pull in using `ggmap()`. It accesses Google (limited API calls), Open Street Maps (limited API calls), Stamen Maps (no API limit and maptype calls appropriate to a variety of use cases).
+                        <br>
+                        Clockwise from the top left, you see the Stamen maptypes "terrain-background", "toner-lines", "watercolor", "toner-lite", and "toner-2011".
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Vector maps from `maps`</h2>
+                    <pre><code data-trim class="r">
+map_data("world")
+ggplot(world, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = region), color = "black")
+                    </code></pre>
+                    
+                    <img src="images/mapinr-12-mapsvector.png" style="float:center;height:45%">
+                    
+                    <aside class="notes">
+                        How did we make this map?
+                        <br>
+                        First, we pull in a dataset from the `maps` package. 
+                        <br>
+                        We establish a ggplot object using data from the world object (a dataframe from the "maps" package, which tracks ordered latitude and longitude points tracing the outlines of nations grouped by a categorical variable), defining the aesthetic mappings of x to longitude, y to latitude, and group to group (the value used to track which points belong to which nations). The next line adds a geom layer using the polygon statistic: this uses the group aesthetic to trace contained spaces. The fill color is set to region, a categorical variable in the world dataframe, so ggplot will automatically try to apply appropriate colors to make the regions distinct (it does not work perfectly for data like this, you can notice a few instances where similar colors are adjacent, but the rules assigning color values can be adjusted as part of generating a finished product).
+                        <br>
+                        There is a problem with this quick-and-dirty map: can you find the Caspian Sea or the Great Lakes?
+                        <br>
+                        An important note for now and moving forward: the R code displayed is a minimal representation of that required to produce the graphic shown. The focus is on the functions and options needed to produce the map. We want to focus on the mapping code, not the housekeeping code that suppresses legends or axis ticks. The full code used to produce these graphics is available: <a href="https://github.com/ElizabethAB/mapping_in_r">ElizabethAB/mapping_in_r</a></li>.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Vector maps from `maps`</h2>
+                    <pre><code data-trim class="r">
+map_data("world")
+ggplot(world, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = region), color = "black") +
+  coord_map("ortho", orientation=c(41, -74, 0))
+                    </code></pre>
+                    
+                    <img src="images/mapinr-13-coordvector.png" style="float:center;height:45%">
+                    
+                    <aside class="notes">
+                        The value of vector maps is their customizability, easily accessed with the flexibility built into the "ggplot2" package.
+
+                        The coord_map() call specifyies our preferred projection as orthographic and centers on New York City. 
+
+                        <em>Projections are important to understanding maps, but are a complicated topic we won't cover thoroughly. In brief, map projections are mathematical transformations of a sphere to a flat plane representation and they necessarily trade off accuracy of angle, size, and relation. Different projection classes are better for accurately representing different latitudes (azimuthal for polar, cylindrical for equatorial, and conic for middle-latitude areas).</em>
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Vector maps from shapefiles</h2>
+                    <pre><code data-trim class="r">
+usa <- readOGR(dsn = "Inputs", "cb_2014_us_county_500k")
+usa@data$id = rownames(usa@data)
+usa.points = fortify(usa, region = "id")
+county = join(usa.points, usa@data, by = "id")
+                    </code></pre>
+                    
+                    <img src="images/mapinr-14-shapefile.png" style="float:center;height:45%">
+                    
+                    <aside class="notes">
+                        <a href="http://www2.census.gov/geo/tiger/GENZ2014/shp/cb_2014_us_county_500k.zip">Data source</a> 
+                        <br>
+                        Shapefiles are an industry-standard format for storing spatial relationships data. They rely on multiple individual files on disk in a shared folder and connected by a common base name (in this example, cb_2014_us_county_500k).
+                        <br>
+                        Reading a shapefile into R is not difficult, but it is more involved than the methods we have so far reviewed. We use the `readOGR()` function from the "rgdal" package (an R interface to the geospatial data abstraction library GDAL) to identify the folder containing our shapefile set and the common name.
+                        <br>
+                        We can use the same code from our previous slide, but using US census shapefiles gives us a better resolution and more confidence that the graphic represents current accepted boundaries.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Mixing rasters and vectors</h2>
+                    
+                    <section>
+                        <pre><code data-trim class="r">
+usa_raster <- get_map(bbox(county[,c("long", "lat")]),
+                      maptype = "watercolor", zoom = 6)
+ggmap(usa_raster, extent = "device",
+      base_layer = ggplot(aes(x = long, y = lat, group = group),
+                          data = county)) +
+  geom_polygon(aes(fill = STATEFP, color = STATEFP), alpha = .3) +
+  coord_map(projection = "mercator")
+                        </code></pre>
+                    
+                        <aside class="notes">
+                            `county` is a dataframe containing the trace information for US counties. We source a watercolor type map (because it's pretty) using the bounding box of the `county` dataframe.
+                            <br>
+                            In the call to `ggmap()`, note two things in particular: that we can use a presaved raster image (`usa_raster`), which means we can reuse images without having to redownload them, and that we specify the `base_layer` as a ggplot object.
+                        </aside>
+                    </section>
+                    
+                    <section>
+                        <img src="images/mapinr-15-mixed.png" style="float:center;height:60%">
+                    </section>
+                    
+                </section>
+                
+<!-- ----------------------------------------------------------------------- -->
+
+                <section data-background="#b1e1f4">
+                    <h2 style="text-align:left">
+                        Graphing Data On Maps
+                    </h2>
+                    
+                    <aside class="notes">
+                        Pulling in a map is an important step, but it won't mean much to us if we can't effectively overlay our data on it.
+                    </aside>
+                </section>
+                
+                <section>
+                    <p>The following slides are examples of four basic graphic map types:</p>
+                    <ul>
+                        <li>Dot density</li>
+                        <li>Graduated symbol</li>
+                        <li>Choropleth</li>
+                        <li>Isopleth</li>
+                    </ul>
+                    <p>
+                    The data used is the public <a href="http://docs.huduser.org/gis/FGDB/HudInsuredOwned.gdb.zipx">HUD insured multifamily properties dataset</a> and the <a href="http://quickfacts.census.gov/qfd/download/DataSet.txt">US Census Quickfacts dataset</a>.
+                    </p>
+                    
+                    <aside class="notes">
+                        In the following slides, we will review example cases of four classic map graphic types:
+                        <br>
+                        <ul>
+                            <li>Dot density and graduated symbol maps are glorified scatter plots, but the superimposition of the information over a map allows us to draw inferences apparent only with the added spatial dimension.</li>
+                            <li>Choropleth maps show concentrations or locations of statistical qualities broken down by administrative unit (you've probably seen colored voting pattern maps).</li>
+                            <li>Isopleth maps represent abstract three dimensional surfaces to depict continuous phenomena (that is to say, an isopleth map can show you where in a city are concentrated the most positive Yelp reviews, or the most hipster Yelp reviews)</li>
+                        </ul>
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Dot density</h2>
+                    <pre><code data-trim class="r">
+ggplot(aes(x = long, y = lat), data = states) +
+  geom_polygon(aes(group = group), color = "grey95") +
+  geom_point(aes(x = LON, y = LAT), color = "#2db6e8", alpha = .6,
+             data = insured) +
+  coord_map()
+                    </code></pre>
+                    
+                    <img src="images/mapinr-16-dot.png" style="float:center;height:40%">
+                </section>
+                
+                <section>
+                    <h2>Graduated symbol</h2>
+                    <pre><code data-trim class="r">
+ggplot(aes(x = long, y = lat), data = states) +
+  geom_polygon(aes(group = group), color = "grey95") +
+  geom_point(aes(x = LON, y = LAT, size = Unit_Total), color = "grey85",
+             data = cnty_count, shape = 21, fill = "#2db6e8") +
+  coord_map()
+                    </code></pre>
+                    
+                    <img src="images/mapinr-17-graduated.png" style="float:center;height:40%">
+                </section>
+                
+                <section>
+                    <h2>Choropleth</h2>
+                    <pre><code data-trim class="r">
+ggplot(aes(x = long, y = lat), data = county) +
+  geom_polygon(aes(group = group, fill = Trouble)) +
+  coord_map()
+                    </code></pre>
+                    
+                    <img src="images/mapinr-18-choropleth.png" style="float:center;height:45%">
+                </section>
+                
+                <section>
+                    <h2>Isopleth</h2>
+                    <pre><code data-trim class="r">
+ggmap(dmv_map, base_layer =
+        ggplot(aes(x = LON, y = LAT, fill = CLIENT_GROUP_TYPE),
+               data = dmv_insured)) +
+  stat_density2d(aes(alpha = ..level..), bins = 3, geom = "polygon")
+                    </code></pre>
+                    
+                    <img src="images/mapinr-19-isopleth.png" style="float:center;height:45%">
+                </section>
+                
+                
+<!-- ======================================================================= -->
+
+                <section data-background="#126180">
+                    <h2 style="color:#fff;text-align:center;">
+                        Troubleshooting
+                    </h2>
+                    <p style="color:#fff;">
+                    An example: JPS's problem<br>
+                    Local resources<br>
+                    Troubleshooting steps
+                    </p>
+                </section>
+                
+                <section>
+                    <h2>JPS's Problem</h2>
+                    <ul>
+                        <li>Client presentation using geographic data</li>
+                        <li>Want to highlight relative performance across states</li>
+                        <li>Other mapping methods required proprietary software (SAS, ArcGIS), had limited customization (Excel), or required learning an entirely new open-source software on a short timeline (QGIS)</li>
+                    </ul>
+                </section>
+                
+                <section>
+                    <h2>JPS's Problem</h2>
+                    
+                    <div style="float:left;width:46%">
+                    What the data look like:<br>
+                    <img src="images/mapinr-20-table.png">
+                    </div>
+                    <div style="float:right;width:46%">
+                    How we want the data to look:<br>
+                    <img src="images/mapinr-21-finished.jpg">
+                    </div>
+                </section>
+                
+                <section>
+                    <h2>How the data looked after plotting</h2>                 
+                    <img src="images/mapinr-22-problem.jpg" style="float:center;height:60%">
+                    
+                    <aside class="notes">
+                        Our first question is, what is the problem? As with all coding problems, defining the source of the issue is key to trying to solve it.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Troubleshooting</h2>
+                    <p>Typical sources of map graphic errors:</p>
+                    <ul>
+                        <li>Graphic generator methods (e.g., `ggmap()` not recognizing variables provided by the base layer)</li>
+                        <li>Data organization errors (e.g., ordering of vector points)</li>
+                        <li>Projection mismatching (e.g., vector in WGS84 and data points in NAT83)</li>
+                    </ul>
+                    
+                    <aside class="notes">
+                        Clipping, Ordering, Color
+                        <br>
+                        How is your map data organized?
+                        <br>
+                        How are your data sorted?
+                        <br>
+                        Are you mapping a single year or aggregating multiple years?
+                        <br>
+                        Are your data changing?
+                    </aside>
+                </section>
+                
+                <section>
+                    <h2>Resources</h2>
+                    <ul>
+                        <li><a href="http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf">ggmap: Spatial Visualization with ggplot2 - Kahle and Wickham</a></li>
+                        <li>R packages: `ggplot2` and `ggmap` for graphing, `rgdal` for handling coded geospatial data, and `maps` for EDA</li>
+                        <li>R code to generate the maps in this presentation, including loading and cleaning the data: <a href="https://github.com/ElizabethAB/mapping_in_r">ElizabethAB/mapping_in_r</a></li>
+                    </ul>
+                </section>
+                
+                
+                <section data-background="#126180">
+                    <h2 style="color:#fff;text-align:center;">
+                        Questions?
+                    </h2>
+                </section>
+
+            
+            
+            </div><!-- /slides -->
+        
+        </div><!-- /reveal -->
+
+        <script src="js/reveal-201606.js"></script>
+        <script src="js/head.min.js"></script>
+        <script>
+            Reveal.initialize({
+                // Display controls in the bottom right corner
+                controls: true,
+                // Display a presentation progress bar
+                progress: true,
+                // Display the page number of the current slide
+                slideNumber: true,
+                // Push each slide change to the browser history
+                history: true,
+                // Enable keyboard shortcuts for navigation
+                keyboard: true,
+                // Enable the slide overview mode
+                overview: true,
+                // Vertical centering of slides
+                center: true,
+                // Enables touch navigation on devices with touch input
+                touch: true,
+                // Loop the presentation
+                loop: false,
+                // Turns fragments on and off globally
+                fragments: true,
+                // Flags if speaker notes should be visible to all viewers
+                showNotes: false,
+                // Transition style
+                transition: 'slide', // none/fade/slide/convex/concave/zoom
+                // Transition speed
+                transitionSpeed: 'fast', // default/fast/slow
+                // Transition style for full page slide backgrounds
+                backgroundTransition: 'default', // none/fade/slide/convex/concave/zoom
+                math: {
+                    mathjax: 'https://cdn.mathjax.org/mathjax/latest/MathJax.js',
+                    config: 'TeX-AMS_HTML-full'  // See http://docs.mathjax.org/en/latest/config-files.html
+                },
+                dependencies: [
+                    // Syntax highlight for <code> elements
+                    { src: 'js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    // Speaker notes
+                    { src: 'js/plugin/notes/notes.js', async: true },
+                    // MathJax
+                    { src: 'js/plugin/math/math.js', async: true }
+                ]
+            });
+        </script>
+
+    </body>
+
+</html>

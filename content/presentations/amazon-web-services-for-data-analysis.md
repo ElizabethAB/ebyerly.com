@@ -7,7 +7,7 @@ generator: pandoc
 viewport: width=device-width, initial-scale=1
 apple-mobile-web-app-capable: yes
 
-[Amazon Web Services for Data Analysis]({filename}/presentations/amazon-web-services-for-data-analysis.html)
+Slides: [Amazon Web Services for Data Analysis]({filename}/presentations/amazon-web-services-for-data-analysis.html)
 
 [David Kretch](http://www.kretch.org/) and I originally gave this presentation
 at [Summit Consulting](http://www.summitllc.us/). I've tweaked it slightly to

@@ -4,7 +4,7 @@ date: 2016-02-17
 authors: Elizabeth Byerly
 summary: Minimum viable clusters presentation for StatProgDC
 
-[Automated R Clusters on AWS]({filename}/presentations/minimum-viable-cluster.html)
+Slides: [Automated R Clusters on AWS]({filename}/presentations/minimum-viable-cluster.html)
 
 Press `P` for presenter's notes.
 

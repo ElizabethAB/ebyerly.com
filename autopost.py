@@ -29,4 +29,4 @@ for fn in ap_files:
                     outmd.write(link['name'] + ": " + link['content'] + "\n")
             outmd.write("\n")
             rel = os.sep.join(fn.split(os.sep)[1:]).replace("\\", "/")
-            outmd.write("[" + title + "]({filename}/" + rel + ")")
+            outmd.write("Slides: [" + title + "]({filename}/" + rel + ")")
