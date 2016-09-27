@@ -56,9 +56,14 @@
 /*********************************************
  * GLOBAL STYLES
  *********************************************/
-body {
-  background: #fff;
-  background-color: #fff;
+
+.reveal .outline {
+  color: white;
+  text-shadow:
+    -.02em -0.025em 0 #000,
+    0.025em -0.025em 0 #000,
+    -0.025em 0.025em 0 #000,
+    0.025em 0.025em 0 #000;
 }
 
 div .slides:after {

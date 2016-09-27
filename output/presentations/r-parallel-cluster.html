@@ -1,0 +1,1556 @@
+<html>
+    <head>
+    
+        <title>Parallel and Cluster Computing with R</title>
+        <meta name="tags" content="r,parallel,cluster" />
+        <meta name="date" content="2016-09-27" />
+        <meta name="authors" content="Elizabeth Byerly" />
+        <meta name="summary" content="Taking better advantage of hardware to speed up our software" />
+        <meta charset="UTF-8">
+        
+        <link rel="stylesheet" href="css/reveal.css">
+        <link rel="stylesheet" href="css/reveal-theme-201606.css">
+        <link rel="stylesheet" href="css/highlight-default.css">
+
+        <!-- Printing and PDF exports -->
+        <script>
+          var link = document.createElement( 'link' );
+          link.rel = 'stylesheet';
+          link.type = 'text/css';
+          link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+          document.getElementsByTagName( 'head' )[0].appendChild( link );
+        </script>
+        
+        <style>
+        
+            .reveal section img {
+              display: block;
+              margin-left: auto;
+              margin: 0 auto;
+            }
+            
+            .reveal font.code {
+              font-family: monospace;
+            }
+        
+        </style>
+
+    </head>
+    <body>
+
+        <div class="reveal">
+            <div class="slides">
+            
+<!-- TITLE ================================================================= -->
+            
+<section>
+    <h2>
+        Parallel and Cluster Computing with R
+    </h2>
+    <br>
+    <p>
+        <a href="https://twitter.com/ByerlyElizabeth">Elizabeth Byerly</a><br>
+        2016-09-27
+    </p>
+    <p style="text-align:right;font-size:.5em">
+        Press "s" for presenter's notes
+    </p>
+    
+    <aside class="notes">
+    </aside>
+</section>
+
+<!-- SECTION =============================================================== -->
+
+<section data-background="#126180">
+    <h2 style="color:#fff;text-align:center;">
+        Introduction
+    </h2>
+    <aside class="notes">
+        I am a Data Systems Architect at Summit Consulting, a firm specializing
+        in expert statistician and econometrician services. I am responsible for
+        building hardware and software platforms capable of handling compute-
+        and data-intensive workloads. I've worked with parallel programming and
+        cloud systems for a bit over two years.
+        <br>
+        I am not an expert, I am a practitioner.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Making coffee
+    </h3>
+    <img class="plain" src="images/rpc-01-coffee-elements.svg">
+    <aside class="notes">
+        We're going to start with a conceptual introduction to parallel and
+        cluster computing using a tangible example. A simplified version of
+        making coffee: we use work to grind beans and boil water, which becomes
+        our final product.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Single thread
+    </h3>
+    <img class="plain" src="images/rpc-02-coffee-single-threaded.svg">
+    <aside class="notes">
+        We can grind our coffee, put the kettle on to boil, and then sit (a
+        make-work non-task) before enjoying our coffee.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Parallel
+    </h3>
+    <img class="plain" src="images/rpc-03-coffee-parallel.svg">
+    <aside class="notes">
+        Boiling the water doesn't depend on having our beans ground. We can
+        have multiple processes happening at once: the water heats while the
+        beans grind. It's the same amount of work, but the overall process
+        finishes sooner.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Cluster
+    </h3>
+    <img class="plain" src="images/rpc-04-coffee-cluster.svg">
+    <aside class="notes">
+        Cluster computing IS parallel, with the addition of splitting tasks
+        across physical workers.
+        <br>
+        We have one person grind coffee while the other puts on the kettle. It's
+        the same amount of work, the overall process finishes faster than with a
+        single thread, but we now have two people idling before enjoying coffee.
+    </aside>
+</section>
+
+<section>
+    <p>
+        R is a single-threaded program.
+        <br>
+        We will learn how to write parallel R programs.
+    </p>
+    <aside class="notes">
+    </aside>
+</section>
+
+<!-- SECTION =============================================================== -->
+
+<section data-background="#126180">
+    <h2 style="color:#fff;text-align:center;">
+        Motivation
+    </h2>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Faster process means more iterations, testing, and experimentation
+    </h3>
+    <img class="plain" src="images/rpc-05-iterations.gif" alt="http://www.phdcomics.com/comics/archive.php?comicid=1323">
+    <aside class="notes">
+        If we have two days before a model is due and we think it will take 19
+        hours to estimate, we're forced to accept our best guess of the optimal
+        parameters. If we can cut down the time, we can test our assumptions and
+        develop a better understanding.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Intractable problems become tractable
+    </h3>
+    <img class="plain" src="images/rpc-06-tractable.gif" alt="Sword in the Stone">
+    <aside class="notes">
+        What if your 19-hour model is due by close of business?
+        <br>
+        What if you need to clean gigabytes of text files in R? Every day?
+    </aside>
+</section>
+
+<!-- SECTION =============================================================== -->
+
+<section data-background="#126180">
+    <h2 style="color:#fff;text-align:center;">
+        Outcomes
+    </h2>
+    <aside class="notes">
+        We're going to define the desired outcomes of this presentation, because
+        parallel programming and cluster computing can be the topics of many
+        hours of teaching.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Learn jargon and fundamental concepts of parallel programming
+    </h3>
+    <aside class="notes">
+        If you know the language, you can Google anything we fail to cover.
+        <br>
+        You will nod knowingly when you hear someone say "manager", "worker",
+        "process", "core", and "serial data".
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Identify parallelizable tasks
+    </h3>
+    <aside class="notes">
+        Know that a Markov Chain is not a candidate for parallel programming.
+        <br>
+        Know that the multiple Monte Carlo chains are an ideal candidate for
+        parallel programming.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Learn base R's parallel syntax
+    </h3>
+    <aside class="notes">
+        Base R's "parallel" includes everything you need. Other packages you may
+        have heard of, including foreach, rely on the "parallel" package in
+        their source code.
+        <br>
+        We will have a short section on functional programming (a coding style
+        the "parallel" package assumes you have embraced).
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Introduce cluster computing
+    </h3>
+    <aside class="notes">
+        Cluster computing is parallel programming across multiple computers. It
+        is a dense and technical topic worth many hours of teaching.
+        <br>
+        We will focus on introducing what it means to use cluster computing,
+        focusing on ensuring you have the language to discuss it intelligently.
+        We will also walk through a simple example of running R in parallel
+        across a small cluster.
+    </aside>
+</section>
+
+<!-- SECTION =============================================================== -->
+
+<section data-background="#126180">
+    <h2 style="color:#fff;text-align:center;">
+        Agenda
+    </h2>
+    <ol style="color:#fff;text-align:left;">
+        <li>
+          Parallel programming
+        </li>
+        <li>
+          Parallel programming in R
+        </li>
+        <li>
+          Cluster computing
+        </li>
+    </ol>
+    <aside class="notes">
+    </aside>
+</section>
+
+<!-- SECTION =============================================================== -->
+
+<section data-background="#126180">
+    <h2 style="color:#fff;text-align:center;">
+        Parallel Programming
+    </h2>
+    <aside class="notes">
+        Parallel programming is writing our software to take advantage of our
+        hardware.
+        <br>
+        Let's talk about what it means for our computers to program in parallel.
+        Understanding what happens will help us understand how to structure our
+        parallel work and provide hints when you encounter errors or unexpected
+        behavior.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Parallelizable problems
+    </h3>
+    Work can be split into independent processes:
+    <ul>
+        <li>
+            Bootstrapping
+        </li>
+        <li>
+            Random forests
+        </li>
+        <li>
+            Tuning parameters
+        </li>
+        <li>
+            Graphing
+        </li>
+        <li>
+            Data cleaning
+        </li>
+        <li>
+            ...
+        </li>
+    </ul>
+    <aside class="notes">
+        Also cross validation, we mentioned MCMC earlier, statistical
+        simulations, and others.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Process independence
+    </h3>
+    <ul>
+        <li>
+            A process does not rely on another process's outputs
+        </li>
+        <li>
+            Processes do not need to communicate state during execution
+        </li>
+    </ul>
+    <aside class="notes">
+        In our coffee example, grinding beans does not have to wait for the
+        water to boil. If we specified the system more closely, we would add a
+        step where we steeped our ground beans in the hot water; this process
+        would rely on both boiling water and ground beans and would not be able
+        to be run in parallel with either.
+        <br>
+        The classic example of state communication is a bank transaction. If we
+        ask the bank how much money we have, they say \$20, I request to withdraw
+        \$20, and in the interim I am auto-billed for my cellphone. My process
+        is broken by the action of another process because our actions are not
+        state aware (the auto-debit didn't know I was performing a withdrawal
+        and I did not know an auto-debit was imminent).
+        <br>
+        State is rarely a concern for R programmers.
+    </aside>
+</section>
+
+<section>
+    Many data, one task.
+    <br>
+    One data, many tasks.
+    <aside class="notes">
+        These two scenarios describe the huge majority of parallel tasks.
+        <br>
+        Many data, one task: data cleaning
+        <br>
+        One data, many tasks: bootstrapping
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Parallel overhead
+    </h3>
+    <ul>
+        <li>
+            Load balancing
+        </li>
+        <li>
+            Communication speed
+        </li>
+    </ul>
+    <aside class="notes">
+        Parallel programming has both hard limits (what can and cannot be
+        parallelized) and optimal use considerations. Parallel overhead refers
+        to those aspects of parallel programming that can realistically make it
+        less fast than a single thread process.
+        <br>
+        In our coffee example, when we had two people doing the work, our coffee
+        grinder "idled" while they waited for the water boiler to wrap up. This
+        is a load balancing problem: one process took less time than the other,
+        meaning we were wasting resources.
+        <br>
+        Latency Numbers Every Programmer Should Know is not something you need
+        to memorize, if you Google it, but the important takeaway is: moving
+        information between your CPU and memory takes orders of magnitude less
+        time than moving information between your memory and hard drive.
+    </aside>
+</section>
+
+<!-- SUBSECTION ------------------------------------------------------------ -->
+
+<section data-background="#1b94c3">
+    <h2 style="color:#fff;text-align:center;">
+        The Computer Model
+    </h2>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <img class="plain" src="images/rpc-07-desktop-model.svg">
+    <aside class="notes">
+        Using our desktops or laptops as a model is helpful when thinking about
+        the relevant parts of a computer's hardware.
+        <br>
+        We expect our computer to have a CPU (typically containing multiple
+        cores, or physically discrete processors), memory (that stores
+        information currently in-use by the CPU, such as an R dataframe or the
+        contents of an open webpage), and a hard drive (long-term storage, such
+        as when we save that dataframe as a CSV or RData file).
+        <br>
+        Why is this important? Our hardware is the hard limit on our parallel
+        programming. I can only gainfully split my work across as many work as
+        I have cores. If my work requires storing a large amount of data in
+        memory, I may not be able to parallelize because my programs can't share
+        memory (a particular quirk of R).
+    </aside>
+</section>
+
+<section>
+    <img class="plain" src="images/rpc-08-desktop-r.svg">
+    <aside class="notes">
+        Let's walk through an example of how our computer "thinks"
+        <br>
+        I open an R session. A little bit of memory is occupied by the state of
+        my R session. I get started an arbitrarily "intensive" compute task
+        (repeated matrix multiplications on randomly generated matrices) that
+        means one CPU is constantly occupied with a task.
+    </aside>
+</section>
+
+<section>
+    <img class="plain" src="images/rpc-09-desktop-r-excel.svg">
+    <aside class="notes">
+        Bored, I open an Excel spreadsheet. It's a behemoth and every column is
+        a function. First, the spreadsheet is loaded from our hard drive into
+        memory and then a CPU is absorbed in the task of updating each value.
+    </aside>
+</section>
+
+<section>
+    <br>
+    <img class="plain" src="images/rpc-10-desktop-r-excel-chrome.svg">
+    <aside class="notes">
+        Now waiting on two processes, I open Chrome to check my e-mail. This is
+        easy because neither R nor Excel "exceed" their CPU - my computer still
+        has processing power to burn, even as they struggle.
+    </aside>
+</section>
+
+<section>
+    <img class="plain" src="images/rpc-11-desktop-r-excel-manychrome.svg">
+    <aside class="notes">
+        As I browse and open more Chrome tabs, the "free" CPUs start splitting
+        work. They take a few steps from one process stream, then a few from the
+        next, cycling through each of my open Chrome processes. The CPUs aren't
+        completely absorbed unless they are constantly active.
+    </aside>
+</section>
+
+<section>
+    <img class="plain" src="images/rpc-12-desktop-r-nodes.svg">
+    <aside class="notes">
+        What we're going to do today is learn how to automatically make R be a
+        processing hog: rather than  absorbing one core with one process (and
+        leave room for Chrome), we programatically generate as many processes as
+        we have cores.
+    </aside>
+</section>
+
+<!-- SECTION =============================================================== -->
+
+<section data-background="#126180">
+    <h2 style="color:#fff;text-align:center;">
+        Parallel Programming in R
+    </h2>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <h3>
+        The <font class="code">parallel</font> package
+    </h3>
+    <p>
+        <ul>
+            <li>
+                Base R package
+            </li>
+            <li>
+                Shared syntax with R's functional programming utilities
+                (the <font class="code">apply</font> functions)
+            </li>
+            <li>
+                Systems for all basic parallel operations
+            </li>
+        </ul>
+    <p>
+    <aside class="notes">
+        Base R means that it's batteries included; no installing packages,
+        unambiguous code portability.
+        <br>
+        Iterated syntax means you're not going to have to re-think how to
+        structure your code, if you're already taking advantage of lapply.
+        <br>
+        Functions for all basic parallel operations means it is a one-stop shop.
+        You won't *need* any other packages (though some may come in handy)
+    </aside>
+</section>
+
+<!-- SUBSECTION ------------------------------------------------------------ -->
+
+<section data-background="#1b94c3">
+    <h2 style="color:#fff;text-align:center;">
+        Crash Course: <font class="code">lapply</font>
+    </h2>
+    <aside class="notes">
+        Because the parallel package uses the syntax of the apply functions in
+        R, and we will be repeatedly using it in our examples, we're taking a
+        few slides to make sure everyone is comfortable with lapply.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        <font class="code">lapply</font>
+    </h3>
+    <p>
+        returns a list of the same length as X, each element of which is the
+        result of applying FUN to the corresponding element of X.
+    </p>
+    - CRAN
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r">example_list <- list(1:10, 11:100, rep(20, 5))
+example_vector <- c(1, 3, 16)
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r">lapply(example_list, identity)
+## [[1]]
+##  [1]  1  2  3  4  5  6  7  8  9 10
+## 
+## [[2]]
+##  [1]  11  12  13  14  15  16  17  18  19  20  21  22  23
+## [14]  24  25  26  27  28  29  30  31  32  33  34  35  36
+## [27]  37  38  39  40  41  42  43  44  45  46  47  48  49
+## [40]  50  51  52  53  54  55  56  57  58  59  60  61  62
+## [53]  63  64  65  66  67  68  69  70  71  72  73  74  75
+## [66]  76  77  78  79  80  81  82  83  84  85  86  87  88
+## [79]  89  90  91  92  93  94  95  96  97  98  99 100
+## 
+## [[3]]
+## [1] 20 20 20 20 20
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r">lapply(example_list, mean)
+## [[1]]
+## [1] 5.5
+## 
+## [[2]]
+## [1] 55.5
+## 
+## [[3]]
+## [1] 20
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r">lapply(example_vector, identity)
+## [[1]]
+## [1] 1
+## 
+## [[2]]
+## [1] 3
+## 
+## [[3]]
+## [1] 16
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r">lapply(example_vector, function(x) x * x)
+## [[1]]
+## [1] 1
+## 
+## [[2]]
+## [1] 9
+## 
+## [[3]]
+## [1] 256
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r">lapply(c(identity, mean, sum), function(current_func) {
+  current_func(example_vector)
+})
+## [[1]]
+## [1]  1  3 16
+## 
+## [[2]]
+## [1] 6.666667
+## 
+## [[3]]
+## [1] 20
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<!-- SUBSECTION ------------------------------------------------------------ -->
+
+<section data-background="#1b94c3">
+    <h2 style="color:#fff;text-align:center;">
+        Our First Parallel Program
+    </h2>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Bootstrapping an estimate
+    </h3>
+    <ol>
+        <li>
+            Define a bootstrap for the <font class="code">iris</font> dataset
+        </li>
+        <li>
+            Run the bootstrap function in a single thread
+        </li>
+        <li>
+            Configure a minimal R parallel computing environment
+        </li>
+        <li>
+            Run the bootstrap function in parallel
+        </li>
+    </ol>
+    <aside class="notes">
+        We're going to make a bootstrap estimate of the iris dataset, a classic
+        example dataset classifying types of irises with information on their
+        physical characteristics.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Our bootstrap function
+    </h3>
+<pre><code class="r">run_iris_boot <- function(...) {
+  iris_boot_sample <- iris[sample(1:nrow(iris), replace = TRUE),]
+  lm(Sepal.Length ~ Sepal.Width + Petal.Length,
+     data = iris_boot_sample)
+}
+</pre></code>
+    <aside class="notes">
+        This is the function we will run at each iteration of our bootstrap. We
+        sample from the iris dataset's observations with replacement. We use the
+        sample data to estimate our model, using sepal width and petal length
+        to find the sepal length.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Run once
+    </h3>
+<pre><code class="r">run_iris_boot()
+
+## Call:
+## lm(formula = Sepal.Length ~ Sepal.Width + Petal.Length,
+##  data = iris_boot_sample)
+## 
+## Coefficients:
+##  (Intercept)   Sepal.Width  Petal.Length  
+##       2.0756        0.6162        0.4983  
+</pre></code>
+    <aside class="notes">
+        Running the function once shows us what it returns: an lm model object,
+        or the results of estimating an OLS model on our sample iris data.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Single threaded
+    </h3>
+<pre><code class="r">set.seed(20160927)
+system.time(lapply(1:1000, run_iris_boot))
+##    user  system elapsed 
+##    1.01    0.00    1.02  
+</pre></code>
+    <aside class="notes">
+        To run a bootstrap, we have to re-estimate our model a large number of
+        times. Here we choose 1,000 times and run it using lapply. lapply will
+        run the model at each of 1 through 1000 times of our input vector. It
+        takes a little over a minute. We set our seed for reproduciblity.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Parallel
+    </h3>
+<pre><code class="r">library(parallel)
+cores <- detectCores()
+cluster <- makeCluster(cores)
+clusterSetRNGStream(cluster, 20160927)
+system.time(parLapply(cluster, 1:1000, run_iris_boot))
+##    user  system elapsed 
+##    0.19    0.03    0.77 
+stopCluster(cluster)
+</pre></code>
+    <aside class="notes">
+        Here we do the same process, running our function 1,000 times, but now
+        we run it in parallel. We will step through each line of code here in
+        one moment.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Improvement
+    </h3>
+<pre><code class="r">0.77 / 1.02
+## [1] 0.754902
+</pre></code>
+    <aside class="notes">
+        Our single-threaded example took a bit over a minute. The parallel
+        process took about 75% of that time. I have a two-core laptop, so our
+        speed-up is less than the ideal 50%, but it's a noticeable improvement.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Additional overhead
+    </h3>
+<pre><code class="r">system.time({
+  library(parallel)
+  cores <- detectCores()
+  cluster <- makeCluster(cores)
+  clusterSetRNGStream(cluster, 20160927)
+  parLapply(cluster, 1:1000, run_iris_boot)
+  stopCluster(cluster)
+})
+##    user  system elapsed 
+##    0.17    0.05    1.35
+
+1.35 / 1.02
+## [1] 1.323529
+</pre></code>
+    <aside class="notes">
+        It's important to remember that the process of configuring our worker
+        nodes adds overhead. If we include this overhead in our timing, the
+        parallel process is significantly slower than single-threaded. This
+        example is to re-emphasize the importance of checking performance rather
+        than assuming. Note, if we make it 10,000 iterations, not 1,000, the
+        parallel version once again beats the single-threaded handily.
+    </aside>
+</section>
+
+<!-- SUBSECTION ------------------------------------------------------------ -->
+
+<section data-background="#1b94c3">
+    <h2 style="color:#fff;text-align:center;">
+        Breaking Down the Example
+    </h2>
+    <aside class="notes">
+        As promised, let's walk line by line through our example.
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape><mark>library(parallel)
+cores <- detectCores()</mark>
+cluster <- makeCluster(cores)
+clusterSetRNGStream(cluster, 20160927)
+parLapply(cluster, 1:1000, run_iris_boot)
+stopCluster(cluster)
+</pre></code>
+    <aside class="notes">
+        First, we load into our session's namespace the parallel package. This
+        makes all our subsequent parallel function calls a little less verbose.
+        <br>
+        Next, we use detectCores(). This function returns the number of
+        processors we have on our computer.
+    </aside>
+</section>
+
+<section>
+    <img class="plain" src="images/rpc-13-first-example.svg">
+    <aside class="notes">
+        Going back to our computer model, this is what my laptop looked like as
+        I loaded the package and detected my cores. We can see my R session is
+        using time on one CPU.
+        <br>
+        The right hand window shows my R session process, the way our computers
+        keep track of a running process. The example is Windows but holds true
+        for all systems.
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape>library(parallel)
+cores <- detectCores()
+<mark>cluster <- makeCluster(cores)</mark>
+clusterSetRNGStream(cluster, 20160927)
+parLapply(cluster, 1:1000, run_iris_boot)
+stopCluster(cluster)
+</pre></code>
+    <aside class="notes">
+        Next, we make our cluster. We say "cluster" even if we are one computer,
+        because of the way R parallelize's its programs. It creates remote
+        worker sessions that behave identically to how a separate system would
+        operate: no memory is shared, no objects are shared. It's opening fresh
+        R sessions.
+    </aside>
+</section>
+
+<section>
+    <img class="plain" src="images/rpc-14-first-nodes.svg">
+    <aside class="notes">
+        We can see what it looks like on my laptop. I now have my main R
+        session, which we call the manager, controlling two worker R sessions.
+        These appear as Rscript processes.
+        <br>
+        For those of you who are familiar with launching R scripts from the
+        command line, this is the same kind of Rscript. The worker sessions are
+        waiting from input from the manager, which will come in the form of
+        serial data: byte data, in the form of compiled binary data objects when
+        we transfer data or text when transmitting code instructions.
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape>library(parallel)
+cores <- detectCores()
+cluster <- makeCluster(cores)
+<mark>clusterSetRNGStream(cluster, 20160927)</mark>
+parLapply(cluster, 1:1000, run_iris_boot)
+stopCluster(cluster)
+</pre></code>
+    <aside class="notes">
+        clusterSetRNGStream() is our function to set an appropriate random seed
+        for parallel operation.
+        <br>
+        We have another slide on setting our random number generator's seed for
+        parallel operation, but note two things: if you use system time to set
+        your seed, you can have multiple worker sessions operating from the same
+        starting seed. If you use a normal RNG, they can fall into ruts with the
+        same effect as starting from the same seed.
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape>library(parallel)
+cores <- detectCores()
+cluster <- makeCluster(cores)
+clusterSetRNGStream(cluster, 20160927)
+<mark>parLapply(cluster, 1:1000, run_iris_boot)</mark>
+stopCluster(cluster)
+</pre></code>
+    <aside class="notes">
+        parLapply() is where we actually run our model. Note the syntax is
+        nearly exactly the same as our single-threaded example; the function
+        name is slightly different, though intuitive, and we have the additional
+        argument indicating which on which cluster to launch our operation.
+    </aside>
+</section>
+
+<section>
+    <img class="plain" src="images/rpc-15-first-run.svg">
+    <aside class="notes">
+        Looking again at the state of the computer, after initializing the run,
+        we can see that the CPU usage percentage has shot up on both cores.
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape>library(parallel)
+cores <- detectCores()
+cluster <- makeCluster(cores)
+clusterSetRNGStream(cluster, 20160927)
+parLapply(cluster, 1:1000, run_iris_boot)
+<mark>stopCluster(cluster)</mark>
+</pre></code>
+    <aside class="notes">
+        Finally, when we have finished running our model and are done using the
+        cluster, we run stopCluster(). This frees the worker sessions, clearing
+        memory and our CPU's attention.
+        <br>
+        stopCluster() is important for cleanup, but it can also be important
+        in running an interactive session. If you start a piece of code running,
+        realize you made an error, and "stop" your current process, realize that
+        you haven't stopped your worker sessions! stopCluster() will force them
+        to stop operating.
+    </aside>
+</section>
+
+<section>
+    <img class="plain" src="images/rpc-13-first-example.svg">
+    <aside class="notes">
+        Finally, looking again at the state of our computer, we can see the
+        worker sessions have stopped and only our manager session is active.
+    </aside>
+</section>
+
+
+<!-- SUBSECTION ------------------------------------------------------------ -->
+
+<section data-background="#1b94c3">
+    <h2 style="color:#fff;text-align:center;">
+        Doing Something Useful
+        <br>
+        Tuning Parameters
+    </h2>
+    <aside class="notes">
+        We're going to skip loading the parallel package, detecting cores,
+        making our cluster, and setting our seed - assume these will be the same
+        for all of our processes.
+    </aside>
+</section>
+
+<section>
+    <h3>
+    Testing k-means groups
+    </h3>
+    <ol>
+        <li>
+            Generate and configure our cluster
+        </li>
+        <li>
+            Instruct our worker nodes to load a needed package
+        </li>
+        <li>
+            Run k-means against different potential group counts on our worker
+            nodes
+        </li>
+        <li>
+            Return the results to our manager session
+        </li>
+        <li>
+            Summarize the fit for different groups in our manager session
+        </li>
+    </ol>
+    <aside class="notes">
+        k-means is a way of trying to find patterns in groups.
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape><mark>clusterEvalQ(cluster, library(MASS))</mark>
+test_centers <- 2:6
+node_results <- parSapply(cluster, test_centers, function(n_centers) {
+  kmeans(anorexia[2:3], centers = n_centers, nstart = 200)$betweenss
+})
+final_results <- by(node_results, test_centers, median)
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape>clusterEvalQ(cluster, library(MASS))
+<mark>test_centers <- 2:6</mark>
+node_results <- parSapply(cluster, test_centers, function(n_centers) {
+  kmeans(anorexia[2:3], centers = n_centers, nstart = 200)$betweenss
+})
+final_results <- by(node_results, test_centers, median)
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape>clusterEvalQ(cluster, library(MASS))
+test_centers <- 2:6
+<mark>node_results <- parSapply(cluster, test_centers, function(n_centers) {
+  kmeans(anorexia[2:3], centers = n_centers, nstart = 200)$betweenss
+})</mark>
+final_results <- by(node_results, test_centers, median)
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape>clusterEvalQ(cluster, library(MASS))
+test_centers <- 2:6
+node_results <- parSapply(cluster, test_centers, function(n_centers) {
+  kmeans(anorexia[2:3], centers = n_centers, nstart = 200)<mark>$betweenss</mark>
+})
+final_results <- by(node_results, test_centers, median)
+</pre></code>
+    <aside class="notes">
+        Notice how we transmit very little data between the manager process and
+        the workers. The manager only sends code: load a package, run this
+        function, which is byte-size text. The workers, likewise, don't send
+        back chunky model objects, only the result of interest (a measure of
+        fit).
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape>clusterEvalQ(cluster, library(MASS))
+test_centers <- 2:6
+node_results <- parSapply(cluster, test_centers, function(n_centers) {
+  kmeans(anorexia[2:3], centers = n_centers, nstart = 200)$betweenss
+})
+<mark>final_results <- by(node_results, test_centers, median)</mark>
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<!-- SUBSECTION ------------------------------------------------------------ -->
+
+<section data-background="#1b94c3">
+    <h2 style="color:#fff;text-align:center;">
+        Doing Something Useful
+        <br>
+        Cleaning Data
+    </h2>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <h3>
+    Cleaning text data
+    </h3>
+    <ol>
+        <li>
+            Generate and configure our cluster
+        </li>
+        <li>
+            Export database information to our worker nodes
+        </li>
+        <li>
+            Instruct our worker nodes to create a connection to the database
+        </li>
+        <li>
+            Split the raw text file paths across our worker nodes and instruct
+            them to read each text file, clean the data, and write it to the
+            database
+        </li>
+    </ol>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape><mark>clusterExport(cluster, c("db_user", "db_password", "db_host"))</mark>
+
+clusterEvalQ(cluster, {
+  db_conn <- dbConnect(user=db_user, password=db_password,
+                       host=db_host)
+})
+
+parLapply(cluster, raw_data_files, function(file_path) {
+  df <- read.csv(file_path)
+  df$y <- toupper(df$y)
+  dbWriteTable(db_conn, df, )
+})
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape>db_user <- "elizabeth"
+db_user
+## [1] "elizabeth"
+
+clusterEvalQ(cluster, db_user)
+## Error in checkForRemoteErrors(lapply(cl, recvResult)) : 
+##   2 nodes produced errors; first error: object 'db_user' not found
+
+clusterExport(cluster, c("db_user"))
+clusterEvalQ(cluster, db_user)
+## [[1]]
+## [1] "elizabeth"
+## 
+## [[2]]
+## [1] "elizabeth"
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape>clusterExport(cluster, c("db_user", "db_password", "db_host"))
+
+<mark>clusterEvalQ(cluster, {
+  db_conn <- dbConnect(user=db_user, password=db_password,
+                       host=db_host)
+})</mark>
+
+parLapply(cluster, raw_data_files, function(file_path) {
+  df <- read.csv(file_path)
+  df$y <- toupper(df$y)
+  dbWriteTable(db_conn, df, )
+})
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape>clusterExport(cluster, c("db_user", "db_password", "db_host"))
+
+clusterEvalQ(cluster, {
+  db_conn <- dbConnect(user=db_user, password=db_password,
+                       host=db_host)
+})
+
+<mark>parLapply(cluster, raw_data_files, function(file_path) {</mark>
+  df <- read.csv(file_path)
+  df$y <- toupper(df$y)
+  dbWriteTable(db_conn, df, )
+})
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape>clusterExport(cluster, c("db_user", "db_password", "db_host"))
+
+clusterEvalQ(cluster, {
+  db_conn <- dbConnect(user=db_user, password=db_password,
+                       host=db_host)
+})
+
+parLapply(cluster, raw_data_files, function(file_path) {
+  <mark>df <- read.csv(file_path)
+  df$y <- toupper(df$y)</mark>
+  dbWriteTable(db_conn, df, )
+})
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+<pre><code class="r" data-noescape>clusterExport(cluster, c("db_user", "db_password", "db_host"))
+
+clusterEvalQ(cluster, {
+  db_conn <- dbConnect(user=db_user, password=db_password,
+                       host=db_host)
+})
+
+parLapply(cluster, raw_data_files, function(file_path) {
+  df <- read.csv(file_path)
+  df$y <- toupper(df$y)
+  <mark>dbWriteTable(db_conn, df, )</mark>
+})
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<!-- SUBSECTION ------------------------------------------------------------ -->
+
+<section data-background="#1b94c3">
+    <h2 style="color:#fff;text-align:center;">
+        Troubleshooting
+    </h2>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Evaluating performance
+    </h3>
+    <p>
+        When does it make sense to absorb the parallel overhead?
+    </p>
+    <ol>
+        <li>
+            Many computations against the same data
+        </li>
+        <li>
+            The same computation against many data
+        </li>
+        <li>
+            No need to communicate mid-process
+        </li>
+    </ol>
+    <p>
+        Check your assumptions using <font class="code">system.time()</font>
+    </p>
+    <aside class="notes">
+        Remember, you can vectorize functions
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Monitoring nodes
+    </h3>
+    <p>
+        Error messages are typically obtuse.
+    </p>
+<pre><code class="r">## Error in checkForRemoteErrors(val) : 
+##   4 nodes produced errors; first error: 1
+</pre></code>
+    <ul>
+        <li>
+            Test your code in a single-threaded session
+        </li>
+        <li>
+            Create log files for worker nodes
+        </li>
+    </ul>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Random number generators
+    </h3>
+<pre><code class="r">clusterSetRNGStream(cluster, 20160927)</pre></code>
+    <p>
+        Two things to consider:
+    </p>
+    <ol>
+        <li>
+            For L'Ecuyer to work, the same number of worker processes must be
+            fed streams
+        </li>
+        <li>
+            We cannot reproduce the results in a single-threaded process
+        </li>
+    </ol>
+    <aside class="notes">
+        We can hardcode the number of cores to use, instead of using
+        detectCores(). The code will work even on machines with fewer than the
+        specified cores (the processes will wait their turns), but will be slow.
+        <br>
+        We can also generate all of our random numbers on our manager process
+        (properly seeded, of course), and feed those numbers to our worker
+        processes as an input.
+    </aside>
+    <aside class="notes">
+    </aside>
+</section>
+
+<!-- SECTION =============================================================== -->
+
+<section data-background="#126180">
+    <h2 style="color:#fff;text-align:center;">
+        Cluster Computing
+    </h2>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <p>
+        A cluster is a number of computers configured to work together across a
+        network as a single system for some task.
+    </p>
+    <img class="plain" src="images/rpc-16-cluster-ideal.svg">
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <p>
+        For our purposes, a cluster is computers running local R sessions that
+        take commands and return outputs to a manager session.
+    </p>
+    <img class="plain" src="images/rpc-17-cluster-r.svg">
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <h3>
+        makePSOCKCluster()
+    </h3>
+    <ul>
+        <li>
+            Given a number, make that many local Rscript sessions.
+        </li>
+        <li>
+            Given a character vector, use each value as a network address and
+            instantiate a remote Rscript session.
+        </li>
+        <li>
+            The manager R session tracks the network location and port of each
+            Rscript worker node.
+        </li>
+        <li>
+            Rscript worker nodes listen on a port for instructions and serial
+            data from the manager.
+        </li>
+    </ul>
+    <aside class="notes">
+        Surprise! We've been cluster computing all along, treating our cores as
+        stand-alone devices. We're going to use the same function, fed a list of
+        IP addresses that identify a computer on the network, to make a
+        traditional cluster.
+    </aside>
+</section>
+
+<section>
+    <p>
+        Computers and networks default to closed traffic for security.
+    </p>
+    <img class="plain" src="images/rpc-18-cluster-realistic.svg">
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Minimum networking knowledge
+    </h3>
+    <ul>
+        <li>
+            SSH, secure communication across networks
+        </li>
+        <li>
+            Firewalls, traffic control at network boundaries
+        </li>
+        <li>
+            Ports, computers listening for traffic from the network
+        </li>
+    </ul>
+    <aside class="notes">
+        Make friends with your nearest IT person. We're not going to be able to
+        break into these subjects today, we're going to gloss over them in our
+        toy cluster computing example.
+    </aside>
+</section>
+
+<!-- SUBSECTION ------------------------------------------------------------ -->
+
+<section data-background="#1b94c3">
+    <h2 style="color:#fff;text-align:center;">
+        Making an R Cluster
+    </h2>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Steps
+    </h3>
+    <ol>
+        <li>
+            Launch two computers on a secure network
+        </li>
+        <li>
+            Install the necessary software on both computers
+        </li>
+        <li>
+            Share the private network IPs and SSH credentials across the two
+            computers
+        </li>
+        <li>
+            Use <font class="code">makePSOCKcluster()</font> and the private
+            network IP addresses to create worker node R sessions
+        </li>
+    </ol>
+    <aside class="notes">
+        One computer will be our manager and the other our worker.
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Launch two computers
+    </h3>
+    <img class="plain" src="images/rpc-19-cluster-example-launch.svg">
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Install the necessary software
+    </h3>
+    <img class="plain" src="images/rpc-20-cluster-example-install.svg">
+    <pre><code class="bash">sudo apt-get install r-base-dev openssh-server</code></pre>
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Share IPs and SSH credentials
+    </h3>
+    <img class="plain" src="images/rpc-21-cluster-example-ssh.svg">
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Create a worker node R session
+    </h3>
+    <img class="plain" src="images/rpc-22-cluster-example-cluster.svg">
+    <aside class="notes">
+    </aside>
+</section>
+
+<section>
+    <h3>
+        Create a worker node R session
+    </h3>
+<pre><code class="r">library(parallel)
+cluster <- makePSOCKcluster(c("172.31.51.171", "localhost"))
+clusterEvalQ(cluster, {
+  system("ifconfig eth0 | grep 'inet addr' | awk '{print $2}'")
+})
+## addr:172.31.50.241
+## addr:172.31.51.171
+</pre></code>
+    <aside class="notes">
+    </aside>
+</section>
+
+<!-- SECTION =============================================================== -->
+
+<section data-background="#126180">
+    <h2 style="color:#fff;text-align:center;">
+        Conclusion
+    </h2>
+    <aside class="notes">
+    </aside>
+</section>
+
+
+<section>
+    <h3>
+        Further Reading
+    </h3>
+    <ul>
+        <li>
+            <a href="https://www.amazon.com/Parallel-Computing-Data-Science-Examples/dp/1466587016">
+                Matloff - Parallel Programming for Data Science
+            </a>
+        </li>
+        <li>
+            <a href="https://cran.r-project.org/web/packages/future/index.html">
+                Bengtsson - The <font class="code">future</font> package
+            </a>
+        </li>
+        <li>
+            <a href="http://adv-r.had.co.nz/">
+                Wickham - Advanced R
+            </a>
+        </li>
+        <li>
+            <a href="https://cran.r-project.org/web/views/HighPerformanceComputing.html">
+                Eddelbuettel - High-Performance and Parallel Computing with R
+                Task View
+            </a>
+        </li>
+    </ul>
+</section>
+
+
+<section>
+    <h3>
+        Questions?
+    </h3>
+    <ul>
+        <li>
+            Find me on Twitter (<a href="https://twitter.com/ByerlyElizabeth">@ByerlyElizabeth</a>)
+        </li>
+        <li>
+            Find me on LinkedIn (<a href="https://www.linkedin.com/in/elizabethbyerly">Elizabeth Byerly</a>)
+        </li>
+    </ul>
+</section>
+
+
+<!-- ======================================================================= -->
+            
+            </div><!-- /slides -->
+        
+        </div><!-- /reveal -->
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+        <script>
+            Reveal.initialize({
+                // Display controls in the bottom right corner
+                controls: true,
+                // Display a presentation progress bar
+                progress: true,
+                // Display the page number of the current slide
+                slideNumber: true,
+                // Push each slide change to the browser history
+                history: true,
+                // Enable keyboard shortcuts for navigation
+                keyboard: true,
+                // Enable the slide overview mode
+                overview: true,
+                // Vertical centering of slides
+                center: true,
+                // Enables touch navigation on devices with touch input
+                touch: true,
+                // Loop the presentation
+                loop: false,
+                // Turns fragments on and off globally
+                fragments: true,
+                // Flags if speaker notes should be visible to all viewers
+                showNotes: false,
+                // Transition style
+                transition: 'slide', // none/fade/slide/convex/concave/zoom
+                // Transition speed
+                transitionSpeed: 'fast', // default/fast/slow
+                // Transition style for full page slide backgrounds
+                backgroundTransition: 'default', // none/fade/slide/convex/concave/zoom
+                math: {
+                    mathjax: 'https://cdn.mathjax.org/mathjax/latest/MathJax.js',
+                    config: 'TeX-AMS_HTML-full'  // See http://docs.mathjax.org/en/latest/config-files.html
+                },
+                dependencies: [
+                    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: 'plugin/zoom-js/zoom.js', async: true },
+                    { src: 'plugin/notes/notes.js', async: true },
+                    // MathJax
+                    { src: 'js/plugin/math/math.js', async: true }
+                ]
+            });
+        </script>
+
+    </body>
+
+</html>

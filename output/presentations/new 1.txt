@@ -1,0 +1,11 @@
+lapply(c(identity, mean, sum), function(current_func) {
+  current_func(example_vector)
+})
+## [[1]]
+## [1]  1  3 16
+## 
+## [[2]]
+## [1] 6.666667
+## 
+## [[3]]
+## [1] 20

@@ -1,0 +1,920 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="css/reveal-201606.css">
+        <link rel="stylesheet" href="css/reveal-theme-201606.css">
+        <link rel="stylesheet" href="css/highlight-default.css">
+        
+
+        <title>Floating Point Arithmetic for Data Analysts</title>
+        <meta name="tags" content="float,double,ieee,arithmetic" />
+        <meta name="date" content="2016-07-28" />
+        <meta name="authors" content="Elizabeth Byerly, Bálint Pető" />
+        <meta name="summary" content="How our computers store and operate on real numbers" />
+        
+        <meta charset="UTF-8">
+        
+        <style>
+            .reveal .fp {
+              text-align:center;
+              font-family: monospace;
+              font-size:1.3em;
+            }
+
+            .reveal .exp {
+              color:#4daf4a;
+              text-decoration:underline;
+            }
+            .reveal .sign {
+              color:#e41a1c;
+              text-decoration:underline;
+            }
+            .reveal .mant {
+              color:#984ea3;
+              text-decoration:underline;
+            }
+        </style>
+        
+    </head>
+    <body>
+
+        <div class="reveal">
+            <div class="slides">
+            
+<!-- TITLE ================================================================= -->
+            
+                <section>
+                    <h2>Floating Point Arithmetic for Data Analysts</h2><br>
+                    <p>
+                        <a href="https://twitter.com/ByerlyElizabeth">Elizabeth Byerly</a><br>
+                        <a href="https://twitter.com/csukamajolaj">Bálint Pető</a><br>
+                        2016-07-28
+                    </p>
+                    
+                    <p style="text-align:right;font-size:.5em">
+                        Press "s" for presenter's notes
+                    </p>
+                    
+                    <aside class="notes">
+                        Floating point refers to the system our software uses to store real numbers as a series of 0s and 1s. The purpose of this presentation is to draw out valid real number operations that fail with floating point, identify the coding errors that result, and discuss what we can do to anticipate and avoid these situations.
+                        <br>
+                        This presentation is language agnostic; it applies to any software that adheres to the IEEE 754 floating point standard (R, Stata, Excel, Python, SAS, ...). Actual code chunks are a mix of R and Stata, but should be readable as pseudo-code.
+                    </aside>
+                </section>
+                
+<!-- ======================================================================= -->
+
+                <section data-background="#126180">
+                    <h2 style="color:#fff;text-align:center;">
+                        Purpose
+                    </h2>
+                    <aside class="notes">
+                        We're going to provide the barest description of our subject, floating point numbers and arithmetic, and then list what you will leave our presentation knowing.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        Computers don't think in real numbers
+                    </h3>
+                    <p>
+                        Numbers are stored as a <b><em>finite set of 0s and 1s</em></b>.<br>
+                        Most real numbers are necessarily stored innacurately.
+                    <p>
+                    <aside class="notes">
+                        We think in real numbers and base-10. We write our analytical code.
+                        <br>
+                        Our computers think in fixed-width numbers and base-2. They run our analytical code.
+                        <br>
+                        If we assume our computer is thinking about numbers the same way we do, our code will do something other than we expect.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        Floating point is a standard
+                    </h3>
+                    <p>
+                        It allows us to reason consistently about how our programs will store numbers and perform arithmetic operations.
+                    <p>
+                    <aside class="notes">
+                        If computers can't store a "true" real number, what do they store? It used to be that every low-level software engineer provided their own answer to this question.
+                        <br>
+                        Defined for software portability: <em>analytical code written on a Dell will work on a Lenovo</em>.
+                        <br>
+                        Software portability was NOT standard. A lot of work has gone into ensuring our high level programs can be moved across machines without us having to spend thought and money to refactor them for consistent performance.
+                    </aside>
+                </section>
+                
+                <section>
+                    <p>
+                    You will leave with:
+                    <br>
+                        <ul>
+                            <li>
+                                Sufficient understanding of floating point arithmetic to avoid common errors
+                            </li>
+                            <li>
+                                Jargon and references to allow for subsequent investigation if you are interested
+                            </li>
+                        </ul>
+                    </p>
+                    <aside class="notes">
+                    </aside>
+                    
+                </section>
+                
+                
+<!-- ======================================================================= -->
+
+                <section style="color:#fff" data-background="#126180">
+                    <h2 style="color:#fff;text-align:center;">
+                        Agenda
+                    </h2>
+                    <ol>
+                        <li>
+                            Why we're here: a story of floating point error
+                        </li>
+                        <li>
+                            Representation and arithmetic
+                        </li>
+                        <li>
+                            Sources of error
+                        </li>
+                        <li>
+                            Avoiding error
+                        </li>
+                    </ol>
+                    <aside class="notes">
+                        We begin by explaining the QC experience that led to this presentation. It's a great example of bad assumptions, perfectly obvious to us, leading to ridiculously wrong results.
+                        <br>
+                        Next, we're provide a breakneck guide through how numbers are represented internally and how basic arithmetic is performed (addition and multiplication).
+                        <br>
+                        Once we've established how floating point works, we'll explain where floating point doesn't work (its most common failure modes).
+                        <br>
+                        Finally, we'll provide our current best tips for avoiding error when performing arithmetic on a computer.
+                        <br>
+                        At the end, if we have time, we will have sections on the IEEE standard that defines floating point (its history, what it defines) and alternative numerical representation options (rational numbers, unums).
+                    </aside>
+                </section>
+                
+                
+<!-- ======================================================================= -->
+
+                <section data-background="#126180">
+                    <h2 style="color:#fff;text-align:center;">
+                        Why we're here
+                    </h2>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        Scenario
+                    </h3>
+                    <p>
+                        We want to convert a percentage into a categorical "bucket" variable.
+                    <p>
+                    <pre><code class="r" style="font-size:.85em">..., (0.7, 0.8], (0.8, 0.9], ...</pre></code>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+                <section>
+                    <p>
+                        We define our cutoff points programatically:
+                    <p>
+                    <pre><code class="r" style="font-size:.85em">>> x <- 0
+>> for (i in 1:10) { x <- c(x, x[i] + .1) }
+>> x
+[1] 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0</pre></code>
+                    <p>
+                        When we use those cutoffs on our continuous variable...
+                    <p>
+                    <aside class="notes">
+                        Don't be scared by the code. This starts at 0 increments by 0.1 using addition.
+                    </aside>
+                </section>
+                
+                <section data-background="images/floating-point-2-confused.gif">
+                    <h3 class="outline">
+                        <br><br><br><br><br><br>
+                        0.8  is bucketed into  (0.8, 0.9]
+                    </h3>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+                <section data-background="images/floating-point-3-wut.gif">
+                    <pre><code class="r" style="font-size:1.2em">> 0.7 + 0.1 == 0.8
+[1] FALSE</pre></code>
+                    <pre><code class="stata" style="font-size:1.2em">. assert 0.7 + 0.1 == 0.8
+assertion is false
+</pre></code>
+                        <br><br><br><br><br><br><br><br>
+                    <aside class="notes">
+                        This is not fixed by "double" and it is not dependent on your preferred software package.
+                    </aside>
+                </section>
+                
+                <section>
+                    <pre><code class="r" style="font-size:1.4em">> print(0.8, digits = 20)
+[1] 0.80000000000000004
+> print(0.7 + 0.1, digits = 20)
+[1] 0.79999999999999993</pre></code>
+                    <aside class="notes">
+                        None of these three numbers can be accurately stored by floating point. If we manually enter 0.8, it will resolve to .8 + 15 0s + 4 every time. However, the computer has no way of guessing we *mean* .8 + 15 0s + 4 when we enter 0.7 + 0.1.
+                        <br>
+                        We will walk through how this exact calculation is performed in a few minutes.
+                    </aside>
+                </section>
+                
+                <section data-background="images/floating-point-1-itcouldhappentoyou.jpg">
+                    <h1 class="outline">
+                        <br><br>It Could Happen to You
+                    </h3>
+                    <aside class="notes">
+                        The moral of our story!
+                        <br>
+                        We have to understand floating point arithmetic to avoid making bad assumptions about how our code will actually execute.
+                    </aside>
+                </section>
+                
+                
+<!-- ======================================================================= -->
+
+                <section data-background="#126180">
+                    <h2 style="color:#fff;text-align:center;">
+                        Representation and arithmetic
+                    </h2>
+                    <aside class="notes">
+                        Understanding how a floating point number is stored and, to start, how a few arithmetic operations are performed help us enormously in developing an intuition about where errors can occur.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        What is a float?
+                    </h3>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+                <section>
+                    <p>
+                        A base-2 normalized number encoded in 32 bits with a defined structure:
+                        <ul>
+                            <li>1 <span class="sign">sign</span> bit</li>
+                            <li>8 <span class="exp">exponent</span> bits</li>
+                            <li>23 <span class="mant">mantissa</span> bits</li>
+                        </ul>
+                    </p>
+                    <p class="fp">
+                        <span class="sign">0</span><span class="exp">100 0011 0</span><span class="mant">000 0000 0000 1001 1000 0010</span>
+                        <br>
+                        <span class="sign">+</span>1.<span class="mant">100110000010</span> * 10^(<span class="exp">1000011</span>-1111111)
+                    </p>
+                    <aside class="notes">
+                        A 32-bit float (128.03714) in all its glory!
+                        <br>
+                        We're going to limit our description to singles (known as floats in Stata). Doubles are equivalent to singles except that they are stored in 64 bits (not 32), allowing smaller and larger magnitudes of numbers to be represented with greater precision. They otherwise operate exactly the same.
+                        <br>
+                        Floating point errors may be ameliorated by higher precision, but they are not avoided! `set type double` does not cure all wounds.
+                    </aside>
+                </section>
+                
+                <section data-background="images/floating-point-7-what.gif">
+                    <h3 style="text-align:right" class="outline">
+                        <br><br><br><br><br><br>
+                        If you're confused<br>
+                        and afraid, so are<br>
+                        we. It gets easier!
+                    </h3>
+                    <aside class="notes">
+                        Don't worry, we're breaking it down.
+                        <br>
+                        First we're going to describe what we mean by "sign," "exponent," and "mantissa." Then we'll provide examples of converting from base-10 to floating point.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        Sign
+                    </h3>
+                    <p class="fp">
+                        <span class="sign">0</span>100 0011 0000 0000 0000 1001 1000 0010
+                        <br>
+                        <span class="sign">+</span>1.100110000010 * 10^(1000011-1111111)
+                    </p>
+                    <p>
+                        The sign bit is set to 0 for positive numbers and 1 for negative numbers.
+                    </p>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        Exponent
+                    </h3>
+                    <p class="fp">
+                        0<span class="exp">100 0011 0</span>000 0000 0000 1001 1000 0010
+                        <br>
+                        +1.100110000010 * 10^(<span class="exp">1000011</span>-1111111)
+                    </p>
+                    <p>
+                        The exponent ranges from -126 to +127 using <em>bias</em>: the bits encode numbers from +0 to +255 and the final value is determined by subtracting 127.
+                    </p>
+                    <aside class="notes">
+                        You'll note two possible encodings of the exponent are omitted (-126 to +127 is 254 values, vs. the 256 we can store in 8 bits!).
+                        <br>
+                        If you want to know how many numbers can be stored in a given number of bits, it's 2^(n) - so 8 bits store 2^8 (or 256) numbers. This works for all base schema - three digits in base-10 stores 1,000 numbers.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        Mantissa
+                    </h3>
+                    <p class="fp">
+                        0100 0011 0<span class="mant">000 0000 0000 1001 1000 0010</span>
+                        <br>
+                        +1.<span class="mant">100110000010</span> * 10^(1000011-1111111)
+                    </p>
+                    <p>
+                        The mantissa stores up to 24 significant digits of a normalized base-2 number.
+                    </p>
+                    <aside class="notes">
+                        The mantissa only has 23 bits, but takes advantage of the fact floats are represented as normalized numbers: all normalized base-2 numbers (except for zero) start with 1
+                    </aside>
+                </section>
+                
+                <section>
+                    +/- Zero
+                    <p class="fp">
+                        <span class="sign">*</span><span class="exp">000 0000 0</span><span class="mant">000 0000 0000 0000 0000 0000</span>
+                    </p>
+                    +/- Infinity
+                    <p class="fp">
+                        <span class="sign">*</span><span class="exp">111 1111 1</span><span class="mant">000 0000 0000 0000 0000 0000</span>
+                    </p>
+                    NaN
+                    <p class="fp">
+                        <span class="sign">1</span><span class="exp">111 1111 1</span><span class="mant">100 0000 0000 0000 0000 0000</span>
+                    </p>
+
+                    <aside class="notes">
+                        Special values have reserved space.
+                        <br>
+                        Zero and infinity have both positive and negative versions; the sign bit is not part of their special encoding.
+                        <br>
+                        NaN is technically QNaN (or a quiet, propogating NaN), or a valid NaN generated by an indeterminate mathematical operation. There is also special notation for SNaN (signalling NaN), but that's an error value that gets handled behind the scenes and wouldn't be presented to the user.
+                    </aside>
+                </section>
+                
+                <section data-background="images/floating-point-5-what.gif" data-background-size="contain">
+                    <aside class="notes">
+                        Let's talk through converting a base-10 number into floating point.
+                    </aside>
+                </section>
+                
+<!-- ----------------------------------------------------------------------- -->
+                
+                <section>
+                    <h3>
+                        How are base-10 inputs converted to floating point?
+                    </h3>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Initial base-10 representation
+                    </h4>
+                    <p style="text-align:left" class="fp">
+                        +2.25
+                        <br>
+                        -1.10
+                    </p>
+                    <aside class="notes">
+                        This is our comfort zone.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Convert to base-2
+                    </h4>
+                    <p style="text-align:left" class="fp">
+                        +10.01
+                        <br>
+                        -1.0001100110011...
+                    </p>
+                    <aside class="notes">
+                        There are many resources for learning how to convert between bases! <a href="http://sandbox.mc.edu/~bennet/cs110/flt/dtof.html">Mississippi College has a readable explanation.</a>
+                        <br>
+                        The important thing to note here is that "1.1" cannot be finitely represented in base-2. The "0011-0011" pattern repeats infinitely.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Normalize with scientific notation
+                    </h4>
+                    <p style="text-align:left" class="fp">
+                        +1.001 * 10^1
+                        <br>
+                        -1.0001100110011.. * 10^0
+                    </p>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Identify floating point elements
+                    </h4>
+                    <p style="text-align:left" class="fp">
+                        <span class="sign">+</span>1.<span class="mant">001</span> * 10^<span class="exp">1</span>
+                        <br>
+                        <span class="sign">-</span>1.<span class="mant">000110011...</span> * 10^<span class="exp">0</span>
+                    </p>
+                    <aside class="notes">
+                        We can now point to the sign, mantissa, and exponent.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Account for exponent bias
+                    </h4>
+                    <p style="text-align:left" class="fp">
+                        <span class="sign">+</span>1.<span class="mant">001</span> * 10^(<span class="exp">10000000</span>-1111111)
+                        <br>
+                        <span class="sign">-</span>1.<span class="mant">000110011...</span> * 10^(<span class="exp">1111111</span>-1111111)
+                    </p>
+                    <aside class="notes">
+                        Remember that the exponent value stored by floating point will have 127 subtracted from it, so the two new exponent values here are 1 and 0 plus 127 respectively.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Structure as floating point
+                    </h4>
+                    <p class="fp">
+                        <span class="sign">0</span></span><span class="exp">100 0000 0</span><span class="mant">001 0000 0000 0000 0000</span><br>
+                        <span class="sign">1</span><span class="exp">011 1111 1</span><span class="mant">000 1100 1100 1100 11...</span>
+                    </p>
+                    <aside class="notes">
+                        The first value converts neatly to floating point, appending trailing zeroes to the right.
+                        <br>
+                        We still have that awkward infinite mantissa.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Round
+                    </h4>
+                    <p class="fp">
+                        <span class="sign">0</span></span><span class="exp">100 0000 0</span><span class="mant">001 0000 0000 0000 0000</span><br>
+                        <span class="sign">1</span><span class="exp">011 1111 1</span><span class="mant">000 1100 1100 1100 1101</span>
+                    </p>
+                    <aside class="notes">
+                        The IEEE standard recommends using "round to nearest, ties to even" rounding (<a href="https://en.wikipedia.org/wiki/Rounding#Round_half_to_even">Wikipedia article</a>). If you were raised on the split rule, 01234|56789, it will throw you off!
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Resulting base-10 value
+                    </h4>
+                    <p style="text-align:left" class="fp">
+                        +2.25
+                        <br>
+                        -1.1000000238418579
+                    </p>
+                    <aside class="notes">
+                        Converting back to base ten, we see that the second value (which cannot be exactly represented by floating point) has been slightly corrupted.
+                    </aside>
+                </section>
+                
+                
+                <section data-background="images/floating-point-4-finance.gif">
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+<!-- ----------------------------------------------------------------------- -->
+                
+                <section>
+                    <h3>
+                        How are floats added?
+                    </h3>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Decimal input
+                    </h4>
+                    <p class="fp">
+                        0.1 + 0.7
+                    </p>
+                    <aside class="notes">
+                        Our old nemesis...
+                        <br>
+                        Let's understand exactly what went wrong.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Floating point equation after conversion
+                    </h4>
+                    <p class="fp">
+                        <span class="sign">0</span><span class="exp">011 1101 1</span><span class="mant">100 1100 1100 1100 1100 1101</span><br>
+                        +<br>
+                        <span class="sign">0</span><span class="exp">011 1111 0</span><span class="mant">011 0011 0011 0011 0011 0011</span>
+                    </p>
+                    <aside class="notes">
+                        Neither of these numbers are finitely representable in base-2. Note that 0.7's binary representation is rounded to 0 (the representation is too small) and 0.1's is rounded up (the representation is too large).
+                        
+                        Critically, note that where the truncation has occured in the real space of the number is different! The amount 0.7 is off from its floating point representation is less than for 0.1.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Base-2
+                    </h4>
+                    <p class="fp">
+                        <span class="sign">+</span>1.<span class="mant">10011001100110011001101</span> * 10^<span class="exp">-100</span><br>
+                        +<br>
+                        <span class="sign">+</span>1.<span class="mant">01100110011001100110011</span> * 10^<span class="exp">-1</span>
+                    </p>
+                    <aside class="notes">
+                        We've skipped accounting for exponent bias.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Match the exponents
+                    </h4>
+                    <p class="fp">
+                        <span class="sign">+</span>.001<span class="mant">10011001100110011001101</span> * 10^<span class="exp">-1</span><br>
+                        +<br>
+                        <span class="sign">+</span>1.<span class="mant">01100110011001100110011</span> * 10^<span class="exp">-1</span>
+                    </p>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Result
+                    </h4>
+                    <p class="fp">
+                        +1.10011001100110011001100101 * 10^-1<br>
+                    </p>
+                    <aside class="notes">
+                        Our result!
+                        0.7999999895691872
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Identify floating point elements
+                    </h4>
+                    <p class="fp">
+                        <span class="sign">+</span>1.<span class="mant">10011001100110011001100</span>101 * 10^<span class="exp">-1</span>
+                    </p>
+                    <aside class="notes">
+                        We have three digits that don't fit into the mantissa
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Round
+                    </h4>
+                    <p class="fp">
+                        <span class="sign">+</span>1.<span class="mant">10011001100110011001100</span> * 10^<span class="exp">-1</span>
+                    </p>
+                    <aside class="notes">
+                        The value is rounded.
+                        
+                        There are multiple methods of rounding. The recommended method is "round to nearest, ties to even" - different from what is taught in schools, where .5 goes always up. Prevents accumulating bias.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h4>
+                        Resulting floating point
+                    </h4>
+                    <p class="fp">
+                        <span class="sign">0</span><span class="exp">011 1111 0</span><span class="mant">100 1100 1100 1100 1100 1100</span>
+                    </p>
+                    <aside class="notes">
+                        Finally, it is stored as a floating-point value.
+                        Base-10 before/after rounding: 0.7999999895691872 - 0.7999999523162842 = .000000037252903
+                    </aside>
+                </section>
+                
+<!-- ----------------------------------------------------------------------- 
+                
+                <section>
+                    <h3>
+                        How are floats multiplied?
+                    </h3>
+                    <aside class="notes">
+                    </aside>
+                </section>
+-->
+
+                <section data-background="images/floating-point-9-so.gif">
+                    <h1 style="text-align:left" class="outline">
+                        So?
+                    </h1>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+<!-- ======================================================================= -->
+
+                <section data-background="#126180">
+                    <h2 style="color:#fff;text-align:center;">
+                        Sources of error
+                    </h2>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+                <section data-background-video="images/floating-point-6-falling.mp4" data-background-video-loop data-background-size="contain">
+                    <h2 class="outline">
+                        Also known as:<br>Common Stumbling Points
+                        <br><br><br><br><br>
+                    </h2>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        False precision
+                    </h3>
+                    <pre><code class="r" style="font-size:.85em"> print(mean(c(1.1, 2.74, 3, 4.9, 5.2)), digits = 20)
+[1] 3.3880000000000003</pre></code>
+                    <p>
+                        Do you believe your model is measuring to the 16th significant digit?
+                    </p>
+                    <aside class="notes">
+                        "Little in this world is measured to a relative accuracy of ±2-24, the accuracy provided by float precision." - Gould
+                        
+                        "Epsilon" refers to the smallest value such that 1 + epsilon != 1. This concept exists because a float's resolution is limited.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        Exact comparisons
+                    </h3>
+                    <pre><code class="stata" style="font-size:1em">. assert float(1.1) == 1.1
+assertion is false</code></pre>
+                    <pre><code class="stata" style="font-size:1em">. assert 0.1 + 0.2 > 0.3</code></pre>
+                    
+                    <aside class="notes">
+                        Our second example is in double. Again, precision is not the cure!
+                        
+                        This issue only meaningfully arises when we deal with "nice" decimal numbers (within the range of realistic precision). We need to think about our assertions, though, and be aware of when it is relevant.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        Overflow
+                    </h3>
+                    <pre><code class="r" style="font-size:1em">> 10^309
+[1] Inf</code></pre>
+                    <aside class="notes">
+                        Overflow occurs when the system is requested to store a number that is larger than the maximum value that fits into floating point.
+                    
+                        Single bound: 10^38.53
+                        Double bound: 10^308.3
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        Underflow
+                    </h3>
+                    <pre><code class="r" style="font-size:1em">> 10^-324
+[1] 0</code></pre>
+                    <aside class="notes">
+                        Single bound: 10^−44.85
+                        Double bound: 10^−323.3
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        Drift
+                    </h3>
+                    <pre><code class="r" style="font-size:1em">> x <- 0.7
+> for (i in 1:3) {
++   print(x <- x + 0.1, digits = 22)
++ }
+[1] 0.79999999999999993
+[1] 0.89999999999999991
+[1] 0.99999999999999989</code></pre>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+                
+<!-- ======================================================================= -->
+
+                <section data-background="#126180">
+                    <h2 style="color:#fff;text-align:center;">
+                        Avoiding error
+                    </h2>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        Be aware of context
+                    </h3>
+                    <p>
+                        When is the exact value of a variable relevant to our analysis?
+                    </p>
+                    <ul>
+                        <li>Counts</li>
+                        <li>Financial data</li>
+                        <li>Comparisons</li>
+                    </ul>
+                    <aside class="notes">
+                        Finance is the classic example of when "every penny counts."
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        Rational numbers
+                    </h3>
+                    <p>
+                        If you need exact calculations and have access to the data before it has been converted to floating point, you can store the numerator and denominator as integers for uncorrupted fractions.
+                    </p>
+                    <pre><code class="r" style="font-size:1em">data.frame(numerator = c(1, 1, 2, 2),
+           denominator = c(3, 3, 6, 6))</code></pre>
+                    <aside class="notes">
+                        Two limitations: overflow is still relevant and the huge majority of your software's built-in mathematical operations are no longer accessible to you. You will be doing more manual coding.
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        Avoid unnecessary operations
+                    </h3>
+                    <pre><code class="r" style="font-size:1em">> print((0.7 + 0.1 + 0.1 + 0.1), digits = 22)
+[1] 0.99999999999999989
+> print((0.7 + 0.1 * 3), digits = 22)
+[1] 1</code></pre>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+<!-- ======================================================================= -->
+
+                <section data-background="images/floating-point-9-break.gif" data-background-size="contain">
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+<!-- ======================================================================= -->
+
+                <section data-background="#126180">
+                    <h2 style="color:#fff;text-align:center;">
+                        IEEE 754
+                    </h2>
+                    <aside class="notes">
+                        Institute of Electrical and Electronics Engineers
+                        <br>
+                        IEEE Standards Association
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        History
+                    </h3>
+                    <p>
+                        Originally released in 1985, updated in 2008.
+                        <br>
+                        Draft developed by Intel.
+                        <br>
+                        Originally planned decimal storage, but too complicated to implement.
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+                <section>
+                    <h3>
+                        Standards defined
+                    </h3>
+                    <ul>
+                        <li>16, 32, 64, 128, & 256 bit binary numbers</li>
+                        <li>32, 64, & 128 bit decimal numbers</li>
+                        <li>Subnormal numbers</li>
+                        <li>Representation of +/- zero, +/- infinity, SNaN, QNaN</li>
+                        <li>Minimum precision calculations (add, subtract, multiply, divide, square root)</li>
+                        <li>Method of rounding to nearest integer</li>
+                        <li>Comparison results for non-obvious values (NaN, +/- inifinity)</li>
+                    </ul>
+                    <aside class="notes">
+                    </aside>
+                </section>
+                
+
+<!-- ======================================================================= -->
+
+                <section>
+                    <h2>Resources</h2>
+                    <ul>
+                        <li><a href="http://www.csee.umbc.edu/~tsimo1/CMSC455/IEEE-754-2008.pdf">IEEE 754-2008</a></li>
+                        <li><a href="http://blog.stata.com/2012/04/02/the-penultimate-guide-to-precision/">The Penultimate Guide to Precision (Stata Blog)</a></li>
+                        <li><a href="http://www.burns-stat.com/pages/Tutor/R_inferno.pdf">The R Inferno, Circle 1: Falling into the Floating Point Trap</a></li>
+                        <li><a href="https://cran.r-project.org/doc/FAQ/R-FAQ.html#Why-doesn_0027t-R-think-these-numbers-are-equal_003f">"Why doesn't R think these numbers are equal?"</a></li>
+                        <li><a href="https://www.cis.upenn.edu/~milom/cis371-Spring08/lectures/05_fp.pdf">UPenn CIS 371 Lecture Slides</a></li>
+                    </ul>
+                </section>
+                
+                
+                <section data-background="#126180">
+                    <h2 style="color:#fff;text-align:center;">
+                        Questions?
+                    </h2>
+                </section>
+
+            
+            
+            </div><!-- /slides -->
+        
+        </div><!-- /reveal -->
+
+        <script src="js/reveal-201606.js"></script>
+        <script src="js/head.min.js"></script>
+        <script>
+            Reveal.initialize({
+                // Display controls in the bottom right corner
+                controls: true,
+                // Display a presentation progress bar
+                progress: true,
+                // Display the page number of the current slide
+                slideNumber: true,
+                // Push each slide change to the browser history
+                history: true,
+                // Enable keyboard shortcuts for navigation
+                keyboard: true,
+                // Enable the slide overview mode
+                overview: true,
+                // Vertical centering of slides
+                center: true,
+                // Enables touch navigation on devices with touch input
+                touch: true,
+                // Loop the presentation
+                loop: false,
+                // Turns fragments on and off globally
+                fragments: true,
+                // Flags if speaker notes should be visible to all viewers
+                showNotes: false,
+                // Transition style
+                transition: 'slide', // none/fade/slide/convex/concave/zoom
+                // Transition speed
+                transitionSpeed: 'fast', // default/fast/slow
+                // Transition style for full page slide backgrounds
+                backgroundTransition: 'default', // none/fade/slide/convex/concave/zoom
+                math: {
+                    mathjax: 'https://cdn.mathjax.org/mathjax/latest/MathJax.js',
+                    config: 'TeX-AMS_HTML-full'  // See http://docs.mathjax.org/en/latest/config-files.html
+                },
+                dependencies: [
+                    // Syntax highlight for <code> elements
+                    { src: 'js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    // Speaker notes
+                    { src: 'js/plugin/notes/notes.js', async: true },
+                    // MathJax
+                    { src: 'js/plugin/math/math.js', async: true }
+                ]
+            });
+        </script>
+
+    </body>
+
+</html>
